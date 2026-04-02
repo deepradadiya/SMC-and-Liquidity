@@ -1,0 +1,36 @@
+[2026-04-02 14:59:15] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter] Rate limiting enabled with the following limits:
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/auth/login: 5/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/auth/refresh: 10/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/analysis/*: 10/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/smc/*: 10/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/mtf/*: 10/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/backtest/*: 5/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/advanced-backtest/*: 5/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/signals/*: 30/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/risk/*: 20/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   /api/data/*: 60/minute
+[2026-04-02 14:59:15] [INFO] [app.utils.rate_limiter]   *: 100/minute
+[2026-04-02 14:59:15] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 14:59:15] [INFO] [api] GET /api/test - User: testuser - Status: 200 - Duration: 0.123s
+[2026-04-02 14:59:15] [INFO] [signals] Signal generated: BTCUSDT BUY - Entry: 50000, SL: 49000, TP: 52000, Confidence: 85.0%, Reason: Test signal
+[2026-04-02 14:59:15] [INFO] [trades] Trade executed: trade_123 - BTCUSDT BUY 0.1 @ 50000 - P&L: 100.0
+[2026-04-02 14:59:15] [CRITICAL] [risk] CIRCUIT BREAKER TRIGGERED: Daily loss exceeded - Loss: 6.00%, Max: 5.00%
+[2026-04-02 15:50:23] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter] Rate limiting enabled with the following limits:
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/auth/login: 5/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/auth/refresh: 10/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/analysis/*: 10/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/smc/*: 10/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/mtf/*: 10/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/backtest/*: 5/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/advanced-backtest/*: 5/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/signals/*: 30/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/risk/*: 20/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   /api/data/*: 60/minute
+[2026-04-02 15:50:23] [INFO] [app.utils.rate_limiter]   *: 100/minute
+[2026-04-02 15:50:24] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:50:24] [INFO] [api] GET /api/test - User: testuser - Status: 200 - Duration: 0.123s
+[2026-04-02 15:50:24] [INFO] [signals] Signal generated: BTCUSDT BUY - Entry: 50000, SL: 49000, TP: 52000, Confidence: 85.0%, Reason: Test signal
+[2026-04-02 15:50:24] [INFO] [trades] Trade executed: trade_123 - BTCUSDT BUY 0.1 @ 50000 - P&L: 100.0
+[2026-04-02 15:50:24] [CRITICAL] [risk] CIRCUIT BREAKER TRIGGERED: Daily loss exceeded - Loss: 6.00%, Max: 5.00%

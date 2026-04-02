@@ -4,12 +4,14 @@ from pydantic import BaseModel
 from app.services.market_data_service import MarketDataService
 from app.services.smc_strategy import SMCStrategy
 from app.services.signal_generator import SignalGenerator
+from app.services.risk_manager import RiskManager
 from app.models.signals import TradingSignal
 
 router = APIRouter()
 market_data_service = MarketDataService()
 smc_strategy = SMCStrategy()
 signal_generator = SignalGenerator()
+risk_manager = RiskManager()  # Add risk manager
 
 class SignalRequest(BaseModel):
     symbol: str
@@ -18,7 +20,7 @@ class SignalRequest(BaseModel):
 
 @router.post("/generate", response_model=List[TradingSignal])
 async def generate_trading_signals(request: SignalRequest):
-    """Generate trading signals based on SMC analysis"""
+    """Generate trading signals based on SMC analysis with risk management validation"""
     try:
         # Fetch market data
         market_data = await market_data_service.fetch_ohlcv(
@@ -40,7 +42,22 @@ async def generate_trading_signals(request: SignalRequest):
         # Filter by confidence
         filtered_signals = signal_generator.filter_signals(signals, request.min_confidence)
         
-        return filtered_signals
+        # IMPORTANT: Validate each signal through risk management
+        validated_signals = []
+        for signal in filtered_signals:
+            validation_result = risk_manager.validate_signal(signal)
+            
+            if validation_result.approved:
+                # Add risk management data to signal
+                signal.reasoning += f" | Risk validated: {validation_result.reason}"
+                if validation_result.position_size:
+                    signal.reasoning += f" | Position size: {validation_result.position_size}"
+                validated_signals.append(signal)
+            else:
+                # Log rejected signal
+                print(f"Signal rejected by risk manager: {signal.symbol} {signal.signal_type} - {validation_result.reason}")
+        
+        return validated_signals
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Signal generation failed: {str(e)}")

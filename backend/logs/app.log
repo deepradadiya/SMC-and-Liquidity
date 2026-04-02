@@ -1,0 +1,52 @@
+[2026-04-02 15:47:53] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-02 15:47:56] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 15:47:56] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 15:47:56] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:47:56] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 15:47:56] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 15:47:56] [INFO] [app.main] Response: 200 for POST /api/auth/login in 0.211s
+[2026-04-02 15:48:05] [INFO] [app.main] Request: GET /api/risk/status from 127.0.0.1
+[2026-04-02 15:48:05] [INFO] [app.routes.risk] Getting risk status
+[2026-04-02 15:48:05] [INFO] [app.services.risk_manager] Daily P&L: Realized $0.00, Unrealized $0.00, Total $0.00
+[2026-04-02 15:48:05] [INFO] [app.main] Response: 200 for GET /api/risk/status in 0.002s
+[2026-04-02 15:48:14] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 15:48:14] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 15:48:14] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 15:48:14] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 15:48:14] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 15:48:14] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 15:48:14] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 15:48:14] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:48:14] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 15:48:14] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 15:48:14] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 15:48:15] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 15:48:15] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 15:48:15] [INFO] [app.main] Response: 200 for POST /api/auth/login in 1.052s
+[2026-04-02 15:48:15] [INFO] [app.main] Response: 200 for POST /api/auth/login in 1.052s
+[2026-04-02 15:48:15] [INFO] [app.main] Response: 200 for POST /api/auth/login in 1.052s
+[2026-04-02 15:48:15] [INFO] [app.main] Response: 200 for POST /api/auth/login in 1.052s
+[2026-04-02 15:48:15] [INFO] [app.main] Response: 200 for POST /api/auth/login in 1.052s
+[2026-04-02 15:48:15] [INFO] [app.main] Response: 200 for POST /api/auth/login in 1.052s
+[2026-04-02 15:48:25] [INFO] [app.main] Request: GET /health from 127.0.0.1
+[2026-04-02 15:48:25] [INFO] [app.main] Response: 200 for GET /health in 0.001s
+[2026-04-02 15:48:33] [INFO] [app.main] Request: GET / from 127.0.0.1
+[2026-04-02 15:48:33] [INFO] [app.main] Root endpoint accessed
+[2026-04-02 15:48:33] [INFO] [app.main] Response: 200 for GET / in 0.001s
