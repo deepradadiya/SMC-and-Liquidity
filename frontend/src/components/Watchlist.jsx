@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, X, TrendingUp, TrendingDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useChartStore } from '../stores/chartStore'
+import { watchlistAPI } from '../services/api'
 
 const Watchlist = ({ isCollapsed, onToggleCollapse }) => {
   const { symbol, setSymbol } = useChartStore()
@@ -15,19 +16,39 @@ const Watchlist = ({ isCollapsed, onToggleCollapse }) => {
   const [newSymbol, setNewSymbol] = useState('')
   const [showAddForm, setShowAddForm] = useState(false)
   const [priceData, setPriceData] = useState({})
+  const [isLoading, setIsLoading] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState(null)
 
-  // Mock price data - in real app, this would come from WebSocket
-  useEffect(() => {
-    const generateMockPrices = () => {
+  // Fetch real price data
+  const fetchPriceData = async () => {
+    try {
+      console.log('Fetching watchlist prices...')
+      const response = await watchlistAPI.getPrices()
+      const data = response.data
+      
+      console.log('Received price data:', data)
+      
+      if (data && data.data) {
+        setPriceData(data.data)
+        setLastUpdate(new Date())
+        console.log('✅ Price data updated successfully')
+      } else {
+        console.warn('⚠️ Invalid price data format')
+      }
+      
+    } catch (error) {
+      console.error('❌ Error fetching price data:', error)
+      
+      // Fallback to mock data if API fails
       const mockData = {}
       watchedSymbols.forEach(sym => {
         const basePrice = {
-          'BTCUSDT': 45000,
-          'ETHUSDT': 2800,
-          'ADAUSDT': 0.45,
-          'SOLUSDT': 95,
-          'DOTUSDT': 7.2,
-          'LINKUSDT': 15.8
+          'BTCUSDT': 43250,
+          'ETHUSDT': 2634,
+          'ADAUSDT': 0.4523,
+          'SOLUSDT': 94.67,
+          'DOTUSDT': 7.23,
+          'LINKUSDT': 15.84
         }[sym] || 100
 
         const change = (Math.random() - 0.5) * 10 // -5% to +5%
@@ -35,20 +56,33 @@ const Watchlist = ({ isCollapsed, onToggleCollapse }) => {
         
         mockData[sym] = {
           price: price,
-          change: change,
-          volume: Math.random() * 1000000,
+          change_24h: change,
+          volume_24h: Math.random() * 1000000,
           sparkline: Array.from({ length: 7 }, () => 
             basePrice * (1 + (Math.random() - 0.5) * 0.1)
           )
         }
       })
       setPriceData(mockData)
+    } finally {
+      setIsLoading(false)
     }
+  }
 
-    generateMockPrices()
-    const interval = setInterval(generateMockPrices, 5000) // Update every 5 seconds
-
+  // Initial fetch and periodic updates
+  useEffect(() => {
+    fetchPriceData()
+    
+    // Update every 30 seconds
+    const interval = setInterval(fetchPriceData, 30000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Update when watched symbols change
+  useEffect(() => {
+    if (watchedSymbols.length > 0) {
+      fetchPriceData()
+    }
   }, [watchedSymbols])
 
   const addSymbol = () => {
@@ -130,7 +164,7 @@ const Watchlist = ({ isCollapsed, onToggleCollapse }) => {
             {watchedSymbols.map((sym) => {
               const data = priceData[sym]
               const isActive = sym === symbol
-              const isPositive = data?.change >= 0
+              const isPositive = data?.change_24h >= 0
               
               return (
                 <button
@@ -149,7 +183,7 @@ const Watchlist = ({ isCollapsed, onToggleCollapse }) => {
                     <div className={`text-xs mt-1 ${
                       isPositive ? 'text-bull' : 'text-bear'
                     }`}>
-                      {isPositive ? '+' : ''}{data.change.toFixed(1)}%
+                      {isPositive ? '+' : ''}{data.change_24h.toFixed(1)}%
                     </div>
                   )}
                 </button>
@@ -217,81 +251,92 @@ const Watchlist = ({ isCollapsed, onToggleCollapse }) => {
 
       {/* Symbol List */}
       <div className="flex-1 overflow-y-auto">
-        <div className="space-y-1 p-2">
-          {watchedSymbols.map((sym) => {
-            const data = priceData[sym]
-            const isActive = sym === symbol
-            const isPositive = data?.change >= 0
-            
-            return (
-              <div
-                key={sym}
-                className={`relative group rounded-lg border transition-all ${
-                  isActive
-                    ? 'bg-bull/10 border-bull/30'
-                    : 'bg-dark-bg border-dark-border hover:border-dark-border/60'
-                }`}
-              >
-                <button
-                  onClick={() => selectSymbol(sym)}
-                  className="w-full p-3 text-left"
+        {isLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-bull mx-auto mb-2"></div>
+              <p className="text-dark-muted text-xs">Loading prices...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-1 p-2">
+            {watchedSymbols.map((sym) => {
+              const data = priceData[sym]
+              const isActive = sym === symbol
+              const isPositive = data?.change_24h >= 0
+              
+              return (
+                <div
+                  key={sym}
+                  className={`relative group rounded-lg border transition-all ${
+                    isActive
+                      ? 'bg-bull/10 border-bull/30'
+                      : 'bg-dark-bg border-dark-border hover:border-dark-border/60'
+                  }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-mono font-semibold text-dark-text">
-                      {sym}
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      {data?.change !== undefined && (
-                        <>
-                          {isPositive ? (
-                            <TrendingUp className="w-3 h-3 text-bull" />
-                          ) : (
-                            <TrendingDown className="w-3 h-3 text-bear" />
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {data && (
-                    <>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-dark-text font-medium">
-                          ${formatPrice(data.price, sym)}
-                        </div>
-                        <div className={`text-sm ${
-                          isPositive ? 'text-bull' : 'text-bear'
-                        }`}>
-                          {isPositive ? '+' : ''}{data.change.toFixed(2)}%
-                        </div>
+                  <button
+                    onClick={() => selectSymbol(sym)}
+                    className="w-full p-3 text-left"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-mono font-semibold text-dark-text">
+                        {sym}
                       </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs text-dark-muted">
-                          Vol: {formatVolume(data.volume)}
-                        </div>
-                        <div className="flex items-center">
-                          <MiniSparkline data={data.sparkline} isPositive={isPositive} />
-                        </div>
+                      <div className="flex items-center space-x-1">
+                        {data?.change_24h !== undefined && (
+                          <>
+                            {isPositive ? (
+                              <TrendingUp className="w-3 h-3 text-bull" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3 text-bear" />
+                            )}
+                          </>
+                        )}
                       </div>
-                    </>
-                  )}
-                </button>
+                    </div>
 
-                {/* Remove button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    removeSymbol(sym)
-                  }}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-dark-muted hover:text-bear transition-all"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            )
-          })}
-        </div>
+                    {data ? (
+                      <>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="text-dark-text font-medium">
+                            ${formatPrice(data.price, sym)}
+                          </div>
+                          <div className={`text-sm ${
+                            isPositive ? 'text-bull' : 'text-bear'
+                          }`}>
+                            {isPositive ? '+' : ''}{data.change_24h.toFixed(2)}%
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="text-xs text-dark-muted">
+                            Vol: {formatVolume(data.volume_24h)}
+                          </div>
+                          <div className="flex items-center">
+                            <MiniSparkline data={data.sparkline} isPositive={isPositive} />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-dark-muted text-sm">Loading...</div>
+                    )}
+                  </button>
+
+                  {/* Remove button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeSymbol(sym)
+                    }}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-dark-muted hover:text-bear transition-all"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Footer */}
@@ -301,6 +346,11 @@ const Watchlist = ({ isCollapsed, onToggleCollapse }) => {
           <div className="flex items-center space-x-1">
             <div className="w-2 h-2 bg-bull rounded-full animate-pulse"></div>
             <span>Live</span>
+            {lastUpdate && (
+              <span className="ml-2">
+                {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
           </div>
         </div>
       </div>

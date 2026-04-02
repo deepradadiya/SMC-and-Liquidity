@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { createChart, ColorType, CrosshairMode } from 'lightweight-charts'
 import { useChartStore } from '../stores/chartStore'
 import { useSignalStore } from '../stores/signalStore'
+import { marketDataAPI } from '../services/api'
 
 const TradingChart = () => {
   const chartContainerRef = useRef()
@@ -12,7 +13,7 @@ const TradingChart = () => {
     symbol, 
     timeframe, 
     darkMode, 
-    chartData, 
+    setChartData,
     smcLevels,
     showOrderBlocks,
     showFVGs,
@@ -25,6 +26,88 @@ const TradingChart = () => {
   const { activeSignal } = useSignalStore()
   
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Fetch chart data
+  const fetchChartData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      console.log(`Fetching OHLCV data for ${symbol} ${timeframe}...`)
+      
+      const response = await marketDataAPI.getOHLCV(symbol, timeframe, 100)
+      const data = response.data
+      
+      console.log('Received data:', data)
+      
+      if (data && data.data && Array.isArray(data.data)) {
+        // Convert data to TradingView format
+        const chartData = data.data.map(candle => ({
+          time: Math.floor(new Date(candle.timestamp).getTime() / 1000),
+          open: parseFloat(candle.open),
+          high: parseFloat(candle.high),
+          low: parseFloat(candle.low),
+          close: parseFloat(candle.close),
+          volume: parseFloat(candle.volume)
+        }))
+        
+        console.log('Converted chart data:', chartData.slice(0, 3)) // Log first 3 items
+        
+        // Update chart
+        if (candlestickSeriesRef.current && chartData.length > 0) {
+          candlestickSeriesRef.current.setData(chartData)
+          setChartData(chartData)
+          console.log('✅ Chart data updated successfully')
+        }
+      } else {
+        throw new Error('Invalid data format received from API')
+      }
+      
+    } catch (error) {
+      console.error('Error fetching chart data:', error)
+      setError(`Failed to load chart data: ${error.message}`)
+      
+      // Generate fallback data
+      const fallbackData = generateFallbackData()
+      if (candlestickSeriesRef.current) {
+        candlestickSeriesRef.current.setData(fallbackData)
+        setChartData(fallbackData)
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Generate fallback data if API fails
+  const generateFallbackData = () => {
+    const data = []
+    let price = symbol === 'BTCUSDT' ? 43250 : symbol === 'ETHUSDT' ? 2634 : 0.45
+    const now = Math.floor(Date.now() / 1000)
+    
+    for (let i = 99; i >= 0; i--) {
+      const time = now - (i * 15 * 60) // 15 minutes intervals
+      const change = (Math.random() - 0.5) * 0.02 // ±1% change
+      price *= (1 + change)
+      
+      const open = price
+      const high = price * (1 + Math.random() * 0.01)
+      const low = price * (1 - Math.random() * 0.01)
+      const close = low + Math.random() * (high - low)
+      
+      data.push({
+        time,
+        open: parseFloat(open.toFixed(4)),
+        high: parseFloat(high.toFixed(4)),
+        low: parseFloat(low.toFixed(4)),
+        close: parseFloat(close.toFixed(4))
+      })
+      
+      price = close
+    }
+    
+    return data
+  }
 
   // Initialize chart
   useEffect(() => {
@@ -85,40 +168,6 @@ const TradingChart = () => {
     chartRef.current = chart
     candlestickSeriesRef.current = candlestickSeries
 
-    // Generate sample data for demo
-    const generateSampleData = () => {
-      const data = []
-      let price = 45000
-      const now = new Date()
-      
-      for (let i = 100; i >= 0; i--) {
-        const time = Math.floor((now.getTime() - i * 60 * 60 * 1000) / 1000)
-        const change = (Math.random() - 0.5) * 1000
-        price += change
-        
-        const open = price
-        const high = price + Math.random() * 500
-        const low = price - Math.random() * 500
-        const close = low + Math.random() * (high - low)
-        
-        data.push({
-          time,
-          open,
-          high,
-          low,
-          close,
-        })
-        
-        price = close
-      }
-      
-      return data
-    }
-
-    const sampleData = generateSampleData()
-    candlestickSeries.setData(sampleData)
-    setIsLoading(false)
-
     // Handle resize
     const handleResize = () => {
       chart.applyOptions({ width: chartContainerRef.current.clientWidth })
@@ -132,91 +181,39 @@ const TradingChart = () => {
     }
   }, [darkMode])
 
-  // Update chart data
+  // Fetch data when symbol or timeframe changes
   useEffect(() => {
-    if (!candlestickSeriesRef.current || !chartData.length) return
+    fetchChartData()
+  }, [symbol, timeframe])
 
-    try {
-      candlestickSeriesRef.current.setData(chartData)
-      setIsLoading(false)
-    } catch (error) {
-      console.error('Error setting chart data:', error)
-    }
-  }, [chartData])
-
-  // Draw SMC levels
+  // Auto-refresh data every 30 seconds
   useEffect(() => {
-    if (!chartRef.current) return
+    const interval = setInterval(() => {
+      if (!isLoading) {
+        fetchChartData()
+      }
+    }, 30000)
 
-    // Clear existing overlays (in a real implementation, you'd track these)
-    // For now, we'll just add new ones
+    return () => clearInterval(interval)
+  }, [symbol, timeframe, isLoading])
 
-    // Order Blocks
-    if (showOrderBlocks && smcLevels.orderBlocks) {
-      smcLevels.orderBlocks.forEach(ob => {
-        try {
-          const rectangle = {
-            time1: ob.start_time,
-            time2: ob.end_time,
-            price1: ob.high,
-            price2: ob.low,
-          }
-
-          // Note: This is a simplified implementation
-          // In a real app, you'd use the chart's drawing API properly
-          console.log('Drawing Order Block:', rectangle)
-        } catch (error) {
-          console.error('Error drawing order block:', error)
-        }
-      })
-    }
-
-    // Fair Value Gaps
-    if (showFVGs && smcLevels.fvgs) {
-      smcLevels.fvgs.forEach(fvg => {
-        try {
-          console.log('Drawing FVG:', fvg)
-        } catch (error) {
-          console.error('Error drawing FVG:', error)
-        }
-      })
-    }
-
-    // Liquidity Zones
-    if (showLiquidityZones && smcLevels.liquidityZones) {
-      smcLevels.liquidityZones.forEach(lz => {
-        try {
-          console.log('Drawing Liquidity Zone:', lz)
-        } catch (error) {
-          console.error('Error drawing liquidity zone:', error)
-        }
-      })
-    }
-
-  }, [smcLevels, showOrderBlocks, showFVGs, showLiquidityZones, showBosChoch, showSessionBoxes, showHTFLevels])
-
-  // Draw active signal levels
-  useEffect(() => {
-    if (!chartRef.current || !activeSignal) return
-
-    try {
-      // Draw entry, SL, TP lines
-      console.log('Drawing signal levels:', activeSignal)
-      
-      // In a real implementation, you'd create price lines:
-      // const entryLine = candlestickSeriesRef.current.createPriceLine({
-      //   price: activeSignal.entry_price,
-      //   color: '#3b82f6',
-      //   lineWidth: 2,
-      //   lineStyle: 0,
-      //   axisLabelVisible: true,
-      //   title: 'Entry',
-      // })
-      
-    } catch (error) {
-      console.error('Error drawing signal levels:', error)
-    }
-  }, [activeSignal])
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full bg-dark-surface">
+        <div className="text-center">
+          <div className="text-red-400 mb-2">⚠️</div>
+          <p className="text-dark-text mb-2">Chart Error</p>
+          <p className="text-dark-muted text-sm mb-4">{error}</p>
+          <button
+            onClick={fetchChartData}
+            className="px-4 py-2 bg-bull text-white rounded hover:bg-bull/80 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -224,6 +221,7 @@ const TradingChart = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bull mx-auto mb-2"></div>
           <p className="text-dark-muted text-sm">Loading chart data...</p>
+          <p className="text-dark-muted text-xs mt-1">{symbol} {timeframe.toUpperCase()}</p>
         </div>
       </div>
     )
@@ -257,6 +255,9 @@ const TradingChart = () => {
                 {activeSignal.direction} SIGNAL
               </div>
             )}
+            <div className="text-xs text-bull">
+              ● LIVE
+            </div>
           </div>
         </div>
       </div>
