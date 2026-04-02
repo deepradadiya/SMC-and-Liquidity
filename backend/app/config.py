@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     # Database settings
     DATABASE_URL: str = "sqlite:///./smc_trading.db"
     
+    # SMTP Configuration for Email Alerts
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: Optional[str] = None
+    SMTP_PASS: Optional[str] = None
+    
     # External API settings
     BINANCE_API_KEY: Optional[str] = None
     BINANCE_SECRET_KEY: Optional[str] = None
@@ -117,6 +123,16 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         """Check if running in production mode"""
         return self.APP_ENV == "production"
+    
+    @property
+    def database_url_sync(self) -> str:
+        """Get synchronous database URL"""
+        return self.DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite:///")
+    
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = True
 
 
 @lru_cache()
@@ -211,12 +227,3 @@ if __name__ == "__main__":
     
     # Validate configuration
     validate_configuration()
-    @property
-    def database_url_sync(self) -> str:
-        """Get synchronous database URL"""
-        return self.DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite:///")
-    
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True

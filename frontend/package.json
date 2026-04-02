@@ -18,7 +18,10 @@
     "recharts": "^2.8.0",
     "lucide-react": "^0.294.0",
     "clsx": "^2.0.0",
-    "date-fns": "^2.30.0"
+    "date-fns": "^2.30.0",
+    "zustand": "^4.4.7",
+    "react-hot-toast": "^2.4.1",
+    "framer-motion": "^10.16.16"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

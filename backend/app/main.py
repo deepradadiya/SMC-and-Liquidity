@@ -6,7 +6,8 @@ from slowapi.errors import RateLimitExceeded
 import uvicorn
 from dotenv import load_dotenv
 
-from app.routes import data, analysis, signals, backtest, mtf_analysis, risk, smc_precise, advanced_backtest, auth
+from app.routes import analysis, signals, backtest, mtf_analysis, risk, smc_precise, advanced_backtest, auth, ml, sessions, alerts
+from app.routes import data  # Import the enhanced data routes
 from app.config import get_settings, validate_configuration
 from app.utils.logger import setup_logging, get_logger
 from app.utils.rate_limiter import limiter, rate_limit_exceeded_handler
@@ -57,6 +58,9 @@ app.include_router(mtf_analysis.router, prefix="/api/mtf", tags=["mtf-analysis"]
 app.include_router(risk.router, prefix="/api/risk", tags=["risk-management"])
 app.include_router(smc_precise.router, prefix="/api/smc", tags=["precise-smc"])
 app.include_router(advanced_backtest.router, prefix="/api/advanced-backtest", tags=["advanced-backtest"])
+app.include_router(ml.router, prefix="/api/ml", tags=["machine-learning"])
+app.include_router(sessions.router, prefix="/api/sessions", tags=["session-management"])
+app.include_router(alerts.router, prefix="/api/alerts", tags=["alert-system"])
 
 @app.get("/")
 async def root():

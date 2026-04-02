@@ -50,3 +50,167 @@
 [2026-04-02 15:48:33] [INFO] [app.main] Request: GET / from 127.0.0.1
 [2026-04-02 15:48:33] [INFO] [app.main] Root endpoint accessed
 [2026-04-02 15:48:33] [INFO] [app.main] Response: 200 for GET / in 0.001s
+[2026-04-02 17:00:48] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-02 17:00:54] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 17:00:54] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 17:00:54] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 17:00:54] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 17:00:54] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 17:00:54] [INFO] [app.main] Response: 200 for POST /api/auth/login in 0.190s
+[2026-04-02 17:01:20] [INFO] [app.main] Request: GET /api/ml/status from 127.0.0.1
+[2026-04-02 17:01:20] [INFO] [app.main] Response: 200 for GET /api/ml/status in 0.005s
+[2026-04-02 17:01:30] [INFO] [app.main] Request: POST /api/ml/filter from 127.0.0.1
+[2026-04-02 17:01:30] [WARNING] [app.ml.signal_filter] No trained model available, approving signal by default
+[2026-04-02 17:01:30] [INFO] [app.routes.ml] Signal filtered for user admin - Approved: True
+[2026-04-02 17:01:30] [INFO] [app.main] Response: 200 for POST /api/ml/filter in 0.002s
+[2026-04-02 17:01:38] [INFO] [app.main] Request: GET /api/ml/training-stats from 127.0.0.1
+[2026-04-02 17:01:38] [INFO] [app.main] Response: 200 for GET /api/ml/training-stats in 0.002s
+[2026-04-02 17:30:31] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-02 17:30:50] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 17:30:50] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 17:30:51] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 17:30:51] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 17:30:51] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/auth/login in 0.204s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: GET /api/sessions/status from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for GET /api/sessions/status in 0.002s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.001s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.001s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.001s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.001s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: GET /api/sessions/pairs/asia from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for GET /api/sessions/pairs/asia in 0.001s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: GET /api/sessions/pairs/london from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for GET /api/sessions/pairs/london in 0.000s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: GET /api/sessions/pairs/new_york from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for GET /api/sessions/pairs/new_york in 0.000s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: GET /api/sessions/boxes from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.routes.sessions] Session boxes requested for BTCUSDT on 2026-04-02: 0 boxes
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for GET /api/sessions/boxes in 0.001s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: GET /api/sessions/stats from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.services.session_manager] Generated session statistics for BTCUSDT over 30 days
+[2026-04-02 17:30:51] [INFO] [app.services.session_manager] Best session: asia with 0.00% win rate
+[2026-04-02 17:30:51] [INFO] [app.routes.sessions] Session statistics requested for BTCUSDT over 30 days
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for GET /api/sessions/stats in 0.002s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.001s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.000s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.000s
+[2026-04-02 17:30:51] [INFO] [app.main] Request: POST /api/sessions/check-trading-time from 127.0.0.1
+[2026-04-02 17:30:51] [INFO] [app.main] Response: 200 for POST /api/sessions/check-trading-time in 0.001s
+[2026-04-02 17:53:59] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-02 18:00:41] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 18:00:41] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 18:00:41] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 18:00:42] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 18:00:42] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 18:00:42] [INFO] [app.main] Response: 200 for POST /api/auth/login in 0.199s
+[2026-04-02 18:00:42] [INFO] [app.main] Request: GET /api/alerts/preferences from 127.0.0.1
+[2026-04-02 18:00:42] [INFO] [app.main] Response: 200 for GET /api/alerts/preferences in 0.002s
+[2026-04-02 18:00:42] [INFO] [app.main] Request: PUT /api/alerts/preferences from 127.0.0.1
+[2026-04-02 18:00:42] [INFO] [app.services.alert_manager] Alert preferences updated successfully
+[2026-04-02 18:00:42] [INFO] [app.routes.alerts] Alert preferences updated by user admin
+[2026-04-02 18:00:42] [INFO] [app.main] Response: 200 for PUT /api/alerts/preferences in 0.002s
+[2026-04-02 18:00:42] [INFO] [app.main] Request: POST /api/alerts/test/webhook from 127.0.0.1
+[2026-04-02 18:00:43] [INFO] [app.services.alert_manager] Webhook alert sent successfully: 🧪 Webhook Test Alert
+[2026-04-02 18:00:43] [INFO] [app.routes.alerts] Webhook test requested by user admin: success
+[2026-04-02 18:00:43] [INFO] [app.main] Response: 200 for POST /api/alerts/test/webhook in 1.723s
+[2026-04-02 18:00:43] [INFO] [app.main] Request: POST /api/alerts/test/telegram from 127.0.0.1
+[2026-04-02 18:00:43] [INFO] [app.main] Response: 400 for POST /api/alerts/test/telegram in 0.001s
+[2026-04-02 18:00:43] [INFO] [app.main] Request: POST /api/alerts/send-test-signal from 127.0.0.1
+[2026-04-02 18:00:43] [INFO] [app.routes.alerts] Test signal alert sent by user admin: failed
+[2026-04-02 18:00:43] [INFO] [app.main] Response: 200 for POST /api/alerts/send-test-signal in 0.001s
+[2026-04-02 18:00:43] [INFO] [app.main] Request: GET /api/alerts/history from 127.0.0.1
+[2026-04-02 18:00:43] [INFO] [app.main] Response: 200 for GET /api/alerts/history in 0.003s
+[2026-04-02 18:00:43] [INFO] [app.main] Request: GET /api/alerts/stats from 127.0.0.1
+[2026-04-02 18:00:43] [INFO] [app.main] Response: 200 for GET /api/alerts/stats in 0.001s
+[2026-04-02 18:00:43] [INFO] [app.main] Request: GET /api/alerts/preferences from 127.0.0.1
+[2026-04-02 18:00:43] [INFO] [app.main] Response: 200 for GET /api/alerts/preferences in 0.001s
+[2026-04-02 18:16:13] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-02 18:17:19] [INFO] [app.main] Request: POST /api/auth/login from 127.0.0.1
+[2026-04-02 18:17:19] [INFO] [app.routes.auth] Login attempt for user: admin
+[2026-04-02 18:17:19] [INFO] [app.auth.auth] Successful authentication for user: admin
+[2026-04-02 18:17:19] [INFO] [app.auth.auth] User admin logged in successfully
+[2026-04-02 18:17:19] [INFO] [app.routes.auth] Successful login for user: admin
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for POST /api/auth/login in 0.191s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: GET /api/data/ohlcv from 127.0.0.1
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 24 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 24 candles for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.routes.data] OHLCV data requested by admin: BTCUSDT 1h (24 records)
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for GET /api/data/ohlcv in 0.022s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: POST /api/data/validate from 127.0.0.1
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 48 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 48 candles for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.routes.data] Data validation requested by admin: BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for POST /api/data/validate in 0.007s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: GET /api/data/quality from 127.0.0.1
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for GET /api/data/quality in 0.001s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: GET /api/data/cache/stats from 127.0.0.1
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for GET /api/data/cache/stats in 0.000s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: GET /api/data/export from 127.0.0.1
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 6 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 6 candles for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.routes.data] Data export requested by admin: BTCUSDT 1h (json)
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for GET /api/data/export in 0.004s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: POST /api/data/cache/preload from 127.0.0.1
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Preloading cache for 3 symbols, 2 timeframes
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 168 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 168 candles for BTCUSDT 1h
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for BTCUSDT 4h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 42 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 42 candles for BTCUSDT 4h
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for ETHUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 168 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 168 candles for ETHUSDT 1h
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for ETHUSDT 4h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 42 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 42 candles for ETHUSDT 4h
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for ADAUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 168 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 168 candles for ADAUSDT 1h
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for ADAUSDT 4h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 42 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 42 candles for ADAUSDT 4h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Cache preload completed: 6 successful, 0 failed
+[2026-04-02 18:17:19] [INFO] [app.routes.data] Cache preload requested by admin: 3 symbols, 2 timeframes
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for POST /api/data/cache/preload in 0.057s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: POST /api/data/validate/batch from 127.0.0.1
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for ETHUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 24 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 24 candles for ETHUSDT 1h
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for ADAUSDT 4h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 6 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 6 candles for ADAUSDT 4h
+[2026-04-02 18:17:19] [INFO] [app.routes.data] Batch validation requested by admin: 3 requests
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for POST /api/data/validate/batch in 0.013s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: GET /api/data/ohlcv from 127.0.0.1
+[2026-04-02 18:17:19] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Generating mock data for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Successfully fetched 12 candles from mock
+[2026-04-02 18:17:19] [INFO] [app.services.data_manager] Retrieved 12 candles for BTCUSDT 1h
+[2026-04-02 18:17:19] [INFO] [app.routes.data] OHLCV data requested by admin: BTCUSDT 1h (12 records)
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for GET /api/data/ohlcv in 0.005s
+[2026-04-02 18:17:19] [INFO] [app.main] Request: GET /api/data/ohlcv from 127.0.0.1
+[2026-04-02 18:17:19] [INFO] [app.routes.data] OHLCV data requested by admin: BTCUSDT 1h (12 records)
+[2026-04-02 18:17:19] [INFO] [app.main] Response: 200 for GET /api/data/ohlcv in 0.001s
