@@ -13,7 +13,7 @@ const api = axios.create({
 // Market Data API
 export const marketDataAPI = {
   getOHLCV: (symbol, timeframe = '15m', limit = 100) =>
-    api.get(`/data/ohlcv?symbol=${symbol}&timeframe=${timeframe}&limit=${limit}`),
+    api.get(`/data/ohlcv?symbol=${symbol}&timeframe=${timeframe}`),
   
   getSymbols: () =>
     api.get('/data/symbols'),

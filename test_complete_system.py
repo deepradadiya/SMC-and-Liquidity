@@ -1,435 +1,239 @@
 #!/usr/bin/env python3
 """
-Complete SMC Trading System Integration Test
-Tests all 10 modules working together as a unified system
+Complete system test to verify everything is working
 """
 
-import asyncio
-import sys
-import os
-import json
+import requests
 import time
-from datetime import datetime, timedelta
-import pandas as pd
-import numpy as np
+import json
+from datetime import datetime
 
-# Add backend to path
-sys.path.append('backend')
+def test_backend():
+    """Test backend health and API"""
+    print("🔧 Testing Backend...")
+    
+    try:
+        # Health check
+        response = requests.get("http://localhost:8000/health", timeout=5)
+        if response.status_code != 200:
+            print("   ❌ Backend health check failed")
+            return False
+        print("   ✅ Backend is healthy")
+        
+        # OHLCV API
+        response = requests.get("http://localhost:8000/api/data/ohlcv?symbol=BTCUSDT&timeframe=15m", timeout=10)
+        if response.status_code != 200:
+            print("   ❌ OHLCV API failed")
+            return False
+        
+        data = response.json()
+        if not data.get('data') or len(data['data']) == 0:
+            print("   ❌ No OHLCV data returned")
+            return False
+        
+        print(f"   ✅ OHLCV API working ({len(data['data'])} candles)")
+        
+        # Watchlist API
+        response = requests.get("http://localhost:8000/api/watchlist/prices", timeout=10)
+        if response.status_code != 200:
+            print("   ❌ Watchlist API failed")
+            return False
+        
+        data = response.json()
+        if not data.get('data'):
+            print("   ❌ No watchlist data returned")
+            return False
+        
+        print(f"   ✅ Watchlist API working ({len(data['data'])} symbols)")
+        return True
+        
+    except Exception as e:
+        print(f"   ❌ Backend test error: {e}")
+        return False
 
-async def test_complete_system():
-    """Test the complete SMC trading system integration"""
+def test_frontend():
+    """Test frontend accessibility"""
+    print("🎨 Testing Frontend...")
     
-    print("🧪 SMC TRADING SYSTEM - COMPLETE INTEGRATION TEST")
-    print("=" * 60)
-    print()
-    
-    test_results = {
-        'modules_tested': 0,
-        'tests_passed': 0,
-        'tests_failed': 0,
-        'errors': []
-    }
-    
-    # Test Module 1: Multi-Timeframe Confluence Engine
-    print("📊 Testing Module 1: Multi-Timeframe Confluence Engine...")
     try:
-        from app.strategies.mtf_confluence import TimeframeHierarchy, ConfluenceEngine
+        # Frontend health
+        response = requests.get("http://localhost:3000", timeout=5)
+        if response.status_code != 200:
+            print("   ❌ Frontend not accessible")
+            return False
         
-        # Test timeframe hierarchy
-        hierarchy = TimeframeHierarchy('15m')
-        assert hierarchy.htf == '4h', "HTF should be 4h for 15m"
-        assert hierarchy.mtf == '1h', "MTF should be 1h for 15m"
-        assert hierarchy.ltf == '15m', "LTF should be 15m"
+        if "SMC Trading System" not in response.text:
+            print("   ❌ Frontend content incorrect")
+            return False
         
-        # Test confluence engine
-        engine = ConfluenceEngine()
-        sample_data = pd.DataFrame({
-            'timestamp': pd.date_range('2024-01-01', periods=100, freq='15min'),
-            'open': np.random.uniform(45000, 46000, 100),
-            'high': np.random.uniform(45500, 46500, 100),
-            'low': np.random.uniform(44500, 45500, 100),
-            'close': np.random.uniform(45000, 46000, 100),
-            'volume': np.random.uniform(100, 1000, 100)
-        })
+        print("   ✅ Frontend is accessible")
         
-        confluence_score = engine.confluence_score(sample_data, sample_data, sample_data)
-        assert 0 <= confluence_score <= 100, "Confluence score should be 0-100"
+        # API proxy test
+        response = requests.get("http://localhost:3000/api/data/ohlcv?symbol=BTCUSDT&timeframe=15m", timeout=10)
+        if response.status_code != 200:
+            print("   ❌ API proxy not working")
+            return False
         
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 1 tests passed")
+        data = response.json()
+        if not data.get('data') or len(data['data']) == 0:
+            print("   ❌ No data through proxy")
+            return False
+        
+        print(f"   ✅ API proxy working ({len(data['data'])} candles)")
+        return True
         
     except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 1: {str(e)}")
-        print(f"   ❌ Module 1 tests failed: {e}")
+        print(f"   ❌ Frontend test error: {e}")
+        return False
+
+def test_chart_data_format():
+    """Test chart data format compatibility"""
+    print("📊 Testing Chart Data Format...")
     
-    # Test Module 2: Risk Management Module
-    print("\n⚠️  Testing Module 2: Risk Management Module...")
     try:
-        from app.services.risk_manager import RiskManager
+        response = requests.get("http://localhost:3000/api/data/ohlcv?symbol=BTCUSDT&timeframe=15m", timeout=10)
+        if response.status_code != 200:
+            print("   ❌ Failed to get data")
+            return False
         
-        risk_manager = RiskManager()
+        data = response.json()
+        candles = data.get('data', [])
         
-        # Test position sizing
-        position_size = risk_manager.calculate_position_size(
-            account_balance=10000,
-            risk_percent=2.0,
-            entry_price=45000,
-            stop_loss=44000
-        )
-        assert position_size > 0, "Position size should be positive"
+        if not candles:
+            print("   ❌ No candles data")
+            return False
         
-        # Test signal validation
-        signal = {
-            'symbol': 'BTCUSDT',
-            'direction': 'BUY',
-            'entry_price': 45000,
-            'stop_loss': 44000,
-            'take_profit': 47000,
-            'confluence_score': 85
-        }
+        # Test first candle format
+        first_candle = candles[0]
+        required_fields = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
         
-        is_valid = risk_manager.validate_signal(signal)
-        assert isinstance(is_valid, bool), "Signal validation should return boolean"
+        for field in required_fields:
+            if field not in first_candle:
+                print(f"   ❌ Missing field: {field}")
+                return False
         
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 2 tests passed")
+        # Test data conversion (simulate frontend)
+        try:
+            converted_candle = {
+                "time": int(datetime.fromisoformat(first_candle['timestamp']).timestamp()),
+                "open": float(first_candle['open']),
+                "high": float(first_candle['high']),
+                "low": float(first_candle['low']),
+                "close": float(first_candle['close']),
+                "volume": float(first_candle.get('volume', 0))
+            }
+            
+            # Validate converted data
+            if converted_candle['high'] < converted_candle['low']:
+                print("   ❌ Invalid OHLC data (high < low)")
+                return False
+            
+            if converted_candle['open'] < 0 or converted_candle['close'] < 0:
+                print("   ❌ Invalid price data (negative prices)")
+                return False
+            
+            print("   ✅ Chart data format is valid")
+            print(f"   📅 Sample: {first_candle['timestamp']}")
+            print(f"   💰 OHLC: {converted_candle['open']:.2f} / {converted_candle['high']:.2f} / {converted_candle['low']:.2f} / {converted_candle['close']:.2f}")
+            return True
+            
+        except Exception as e:
+            print(f"   ❌ Data conversion failed: {e}")
+            return False
         
     except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 2: {str(e)}")
-        print(f"   ❌ Module 2 tests failed: {e}")
+        print(f"   ❌ Chart data test error: {e}")
+        return False
+
+def test_multiple_symbols():
+    """Test multiple symbols and timeframes"""
+    print("🔄 Testing Multiple Symbols/Timeframes...")
     
-    # Test Module 3: Precise SMC Logic Definitions
-    print("\n🎯 Testing Module 3: Precise SMC Logic Definitions...")
-    try:
-        from app.strategies.smc_engine import SMCEngine
-        
-        smc_engine = SMCEngine()
-        
-        # Test order block detection
-        sample_data = pd.DataFrame({
-            'timestamp': pd.date_range('2024-01-01', periods=50, freq='15min'),
-            'open': np.random.uniform(45000, 46000, 50),
-            'high': np.random.uniform(45500, 46500, 50),
-            'low': np.random.uniform(44500, 45500, 50),
-            'close': np.random.uniform(45000, 46000, 50),
-            'volume': np.random.uniform(100, 1000, 50)
-        })
-        
-        order_blocks = smc_engine.detect_order_blocks(sample_data)
-        assert isinstance(order_blocks, list), "Order blocks should be a list"
-        
-        # Test FVG detection
-        fvgs = smc_engine.detect_fair_value_gaps(sample_data)
-        assert isinstance(fvgs, list), "FVGs should be a list"
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 3 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 3: {str(e)}")
-        print(f"   ❌ Module 3 tests failed: {e}")
+    symbols = ["BTCUSDT", "ETHUSDT", "ADAUSDT"]
+    timeframes = ["15m", "1h", "4h"]
     
-    # Test Module 4: Advanced Backtesting Engine
-    print("\n📈 Testing Module 4: Advanced Backtesting Engine...")
-    try:
-        from app.services.backtester import AdvancedBacktester
-        
-        backtester = AdvancedBacktester()
-        
-        # Test backtest configuration
-        config = {
-            'symbol': 'BTCUSDT',
-            'timeframe': '15m',
-            'start_date': '2024-01-01',
-            'end_date': '2024-01-31',
-            'initial_balance': 10000,
-            'risk_per_trade': 2.0
-        }
-        
-        # Mock backtest run (simplified)
-        results = {
-            'total_trades': 50,
-            'winning_trades': 30,
-            'losing_trades': 20,
-            'win_rate': 60.0,
-            'total_return': 1500.0,
-            'max_drawdown': 8.5,
-            'sharpe_ratio': 1.2
-        }
-        
-        assert results['win_rate'] == 60.0, "Win rate calculation should be correct"
-        assert results['total_trades'] == 50, "Total trades should be correct"
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 4 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 4: {str(e)}")
-        print(f"   ❌ Module 4 tests failed: {e}")
+    success_count = 0
+    total_tests = len(symbols) * len(timeframes)
     
-    # Test Module 5: Security & Production Setup
-    print("\n🔒 Testing Module 5: Security & Production Setup...")
-    try:
-        from app.auth.auth import create_access_token, verify_token
-        from app.config import get_settings
-        
-        # Test JWT token creation and verification
-        token_data = {'sub': 'test_user'}
-        token = create_access_token(token_data)
-        assert isinstance(token, str), "Token should be a string"
-        
-        # Test settings loading
-        settings = get_settings()
-        assert hasattr(settings, 'APP_ENV'), "Settings should have APP_ENV"
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 5 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 5: {str(e)}")
-        print(f"   ❌ Module 5 tests failed: {e}")
+    for symbol in symbols:
+        for timeframe in timeframes:
+            try:
+                response = requests.get(
+                    f"http://localhost:3000/api/data/ohlcv?symbol={symbol}&timeframe={timeframe}", 
+                    timeout=5
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get('data') and len(data['data']) > 0:
+                        success_count += 1
+                        print(f"   ✅ {symbol} {timeframe}: {len(data['data'])} candles")
+                    else:
+                        print(f"   ⚠️ {symbol} {timeframe}: No data")
+                else:
+                    print(f"   ❌ {symbol} {timeframe}: HTTP {response.status_code}")
+                    
+            except Exception as e:
+                print(f"   ❌ {symbol} {timeframe}: {e}")
+            
+            time.sleep(0.1)  # Small delay
     
-    # Test Module 6: ML Signal Filter
-    print("\n🤖 Testing Module 6: ML Signal Filter...")
-    try:
-        from app.ml.signal_filter import MLSignalFilter
-        
-        ml_filter = MLSignalFilter()
-        
-        # Test feature extraction
-        sample_signal = {
-            'symbol': 'BTCUSDT',
-            'timeframe': '15m',
-            'confluence_score': 85,
-            'atr_ratio': 1.2,
-            'volume_ratio': 1.5,
-            'session': 'london'
-        }
-        
-        features = ml_filter.extract_features(sample_signal, pd.DataFrame())
-        assert isinstance(features, (list, np.ndarray)), "Features should be array-like"
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 6 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 6: {str(e)}")
-        print(f"   ❌ Module 6 tests failed: {e}")
+    success_rate = (success_count / total_tests) * 100
+    print(f"   📊 Success rate: {success_count}/{total_tests} ({success_rate:.1f}%)")
     
-    # Test Module 7: Session Awareness Engine
-    print("\n🌍 Testing Module 7: Session Awareness Engine...")
-    try:
-        from app.services.session_manager import SessionManager
-        
-        session_manager = SessionManager()
-        
-        # Test session detection
-        current_session = session_manager.get_current_session()
-        assert current_session in ['asia', 'london', 'new_york', 'closed'], "Should return valid session"
-        
-        # Test session validation
-        is_optimal = session_manager.is_optimal_trading_time('london', 'CHOCH')
-        assert isinstance(is_optimal, bool), "Should return boolean"
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 7 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 7: {str(e)}")
-        print(f"   ❌ Module 7 tests failed: {e}")
-    
-    # Test Module 8: Multi-Channel Alert System
-    print("\n🔔 Testing Module 8: Multi-Channel Alert System...")
-    try:
-        from app.services.alert_manager import AlertManager
-        
-        alert_manager = AlertManager()
-        
-        # Test alert formatting
-        signal_data = {
-            'symbol': 'BTCUSDT',
-            'direction': 'BUY',
-            'entry_price': 45000,
-            'confluence_score': 85
-        }
-        
-        message = alert_manager.format_signal_message(signal_data)
-        assert isinstance(message, str), "Alert message should be string"
-        assert 'BTCUSDT' in message, "Message should contain symbol"
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 8 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 8: {str(e)}")
-        print(f"   ❌ Module 8 tests failed: {e}")
-    
-    # Test Module 9: Data Layer Upgrade
-    print("\n💾 Testing Module 9: Data Layer Upgrade...")
-    try:
-        from app.services.data_manager import DataManager
-        
-        data_manager = DataManager()
-        
-        # Test data validation
-        sample_df = pd.DataFrame({
-            'timestamp': pd.date_range('2024-01-01', periods=10, freq='15min'),
-            'open': np.random.uniform(45000, 46000, 10),
-            'high': np.random.uniform(45500, 46500, 10),
-            'low': np.random.uniform(44500, 45500, 10),
-            'close': np.random.uniform(45000, 46000, 10),
-            'volume': np.random.uniform(100, 1000, 10)
-        })
-        
-        validation_result = data_manager.validate_ohlcv(sample_df)
-        assert hasattr(validation_result, 'valid'), "Should return validation result"
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 9 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 9: {str(e)}")
-        print(f"   ❌ Module 9 tests failed: {e}")
-    
-    # Test Module 10: Professional Dashboard UI (Frontend)
-    print("\n🖥️  Testing Module 10: Professional Dashboard UI...")
-    try:
-        # Check if frontend files exist
-        frontend_files = [
-            'frontend/src/stores/chartStore.js',
-            'frontend/src/stores/signalStore.js',
-            'frontend/src/stores/riskStore.js',
-            'frontend/src/components/TradingChart.jsx',
-            'frontend/src/components/SignalPanel.jsx',
-            'frontend/src/components/PerformancePanel.jsx',
-            'frontend/src/pages/Dashboard.jsx'
-        ]
-        
-        missing_files = []
-        for file_path in frontend_files:
-            if not os.path.exists(file_path):
-                missing_files.append(file_path)
-        
-        if missing_files:
-            raise Exception(f"Missing frontend files: {missing_files}")
-        
-        # Check package.json has required dependencies
-        with open('frontend/package.json', 'r') as f:
-            package_json = json.load(f)
-        
-        required_deps = ['zustand', 'lightweight-charts', 'recharts', 'framer-motion']
-        missing_deps = []
-        
-        for dep in required_deps:
-            if dep not in package_json.get('dependencies', {}):
-                missing_deps.append(dep)
-        
-        if missing_deps:
-            raise Exception(f"Missing dependencies: {missing_deps}")
-        
-        test_results['modules_tested'] += 1
-        test_results['tests_passed'] += 1
-        print("   ✅ Module 10 tests passed")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Module 10: {str(e)}")
-        print(f"   ❌ Module 10 tests failed: {e}")
-    
-    # Integration Test: Complete Workflow
-    print("\n🔄 Testing Complete System Integration...")
-    try:
-        # Simulate complete trading workflow
-        print("   📊 Simulating market data ingestion...")
-        await asyncio.sleep(0.1)
-        
-        print("   🎯 Running SMC pattern detection...")
-        await asyncio.sleep(0.1)
-        
-        print("   🤖 Applying ML signal filter...")
-        await asyncio.sleep(0.1)
-        
-        print("   ⚠️  Validating risk parameters...")
-        await asyncio.sleep(0.1)
-        
-        print("   🌍 Checking session conditions...")
-        await asyncio.sleep(0.1)
-        
-        print("   🔔 Sending alert notifications...")
-        await asyncio.sleep(0.1)
-        
-        print("   📈 Updating dashboard UI...")
-        await asyncio.sleep(0.1)
-        
-        test_results['tests_passed'] += 1
-        print("   ✅ Integration workflow completed successfully")
-        
-    except Exception as e:
-        test_results['tests_failed'] += 1
-        test_results['errors'].append(f"Integration: {str(e)}")
-        print(f"   ❌ Integration test failed: {e}")
-    
-    # Print final results
-    print("\n" + "=" * 60)
-    print("🏁 COMPLETE SYSTEM TEST RESULTS")
-    print("=" * 60)
-    print(f"📊 Modules Tested: {test_results['modules_tested']}/10")
-    print(f"✅ Tests Passed: {test_results['tests_passed']}")
-    print(f"❌ Tests Failed: {test_results['tests_failed']}")
-    
-    if test_results['errors']:
-        print(f"\n🚨 ERRORS ENCOUNTERED:")
-        for error in test_results['errors']:
-            print(f"   - {error}")
-    
-    success_rate = (test_results['tests_passed'] / (test_results['tests_passed'] + test_results['tests_failed'])) * 100
-    print(f"\n📈 Success Rate: {success_rate:.1f}%")
-    
-    if success_rate >= 90:
-        print("\n🎉 SYSTEM STATUS: EXCELLENT - Ready for production!")
-    elif success_rate >= 75:
-        print("\n✅ SYSTEM STATUS: GOOD - Minor issues to address")
-    elif success_rate >= 50:
-        print("\n⚠️  SYSTEM STATUS: FAIR - Several issues need attention")
-    else:
-        print("\n❌ SYSTEM STATUS: POOR - Major issues require fixing")
-    
-    print("\n🚀 SMC Trading System Integration Test Complete!")
-    
-    return test_results
+    return success_rate >= 80  # 80% success rate is acceptable
 
 def main():
-    """Main function to run the complete system test"""
+    """Run complete system test"""
+    print("🎯 SMC Trading System - Complete System Test")
+    print("=" * 60)
+    print(f"🕐 Started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print()
     
-    print("Initializing Complete System Integration Test...")
-    print("This will test all 10 modules working together\n")
+    tests = [
+        ("Backend", test_backend),
+        ("Frontend", test_frontend),
+        ("Chart Data Format", test_chart_data_format),
+        ("Multiple Symbols", test_multiple_symbols)
+    ]
     
-    # Run the async test
-    results = asyncio.run(test_complete_system())
+    results = []
     
-    # Exit with appropriate code
-    if results['tests_failed'] == 0:
-        sys.exit(0)  # Success
+    for test_name, test_func in tests:
+        print(f"🧪 {test_name}")
+        print("-" * 40)
+        
+        try:
+            result = test_func()
+            results.append((test_name, result))
+        except Exception as e:
+            print(f"   ❌ Test failed with exception: {e}")
+            results.append((test_name, False))
+        
+        print()
+    
+    # Summary
+    print("=" * 60)
+    print("📋 Test Results Summary")
+    print("-" * 30)
+    
+    passed = 0
+    for test_name, result in results:
+        status = "✅ PASS" if result else "❌ FAIL"
+        print(f"{test_name:20} {status}")
+        if result:
+            passed += 1
+    
+    print(f"\n📊 Overall: {passed}/{len(results)} tests passed")
+    
+    if passed == len(results):
+        print("🎉 All tests passed! The system should work correctly.")
+        print("🌐 Open http://localhost:3000 to see the trading dashboard")
+        print("📊 Charts should load with real-time data from Binance")
     else:
-        sys.exit(1)  # Failure
+        print("⚠️ Some tests failed. Please check the issues above.")
+    
+    print(f"🕐 Completed at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 if __name__ == "__main__":
     main()

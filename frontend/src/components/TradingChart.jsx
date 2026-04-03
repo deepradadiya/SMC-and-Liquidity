@@ -49,8 +49,11 @@ const TradingChart = () => {
           high: parseFloat(candle.high),
           low: parseFloat(candle.low),
           close: parseFloat(candle.close),
-          volume: parseFloat(candle.volume)
+          volume: parseFloat(candle.volume || 0)
         }))
+        
+        // Sort by time to ensure proper order
+        chartData.sort((a, b) => a.time - b.time)
         
         console.log('Converted chart data:', chartData.slice(0, 3)) // Log first 3 items
         
@@ -113,6 +116,8 @@ const TradingChart = () => {
   useEffect(() => {
     if (!chartContainerRef.current) return
 
+    console.log('🎯 Initializing chart...')
+
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: darkMode ? '#0a0a0a' : '#ffffff' },
@@ -154,6 +159,8 @@ const TradingChart = () => {
         mouseWheel: true,
         pinch: true,
       },
+      width: chartContainerRef.current.clientWidth,
+      height: chartContainerRef.current.clientHeight,
     })
 
     const candlestickSeries = chart.addCandlestickSeries({
@@ -168,14 +175,22 @@ const TradingChart = () => {
     chartRef.current = chart
     candlestickSeriesRef.current = candlestickSeries
 
+    console.log('✅ Chart initialized successfully')
+
     // Handle resize
     const handleResize = () => {
-      chart.applyOptions({ width: chartContainerRef.current.clientWidth })
+      if (chartRef.current && chartContainerRef.current) {
+        chart.applyOptions({ 
+          width: chartContainerRef.current.clientWidth,
+          height: chartContainerRef.current.clientHeight
+        })
+      }
     }
 
     window.addEventListener('resize', handleResize)
 
     return () => {
+      console.log('🧹 Cleaning up chart...')
       window.removeEventListener('resize', handleResize)
       chart.remove()
     }
@@ -183,18 +198,24 @@ const TradingChart = () => {
 
   // Fetch data when symbol or timeframe changes
   useEffect(() => {
+    console.log(`📊 Symbol or timeframe changed: ${symbol} ${timeframe}`)
     fetchChartData()
   }, [symbol, timeframe])
 
   // Auto-refresh data every 30 seconds
   useEffect(() => {
+    console.log('⏰ Setting up auto-refresh interval')
     const interval = setInterval(() => {
       if (!isLoading) {
+        console.log('🔄 Auto-refreshing chart data...')
         fetchChartData()
       }
     }, 30000)
 
-    return () => clearInterval(interval)
+    return () => {
+      console.log('🛑 Clearing auto-refresh interval')
+      clearInterval(interval)
+    }
   }, [symbol, timeframe, isLoading])
 
   if (error) {
