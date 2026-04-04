@@ -1,270 +1,239 @@
-import React from 'react'
-import { Copy, TrendingUp, TrendingDown, Clock, Target, Shield, Brain, Globe } from 'lucide-react'
-import { useSignalStore } from '../stores/signalStore'
-import { useRiskStore } from '../stores/riskStore'
-import toast from 'react-hot-toast'
+import React from 'react';
+import { useSignalStore } from '../stores';
+import { mockActiveSignal, mockMTFBias, mockMarketRegime, mockQuickStats, mockRiskMeter } from '../data/mockData';
+import { Copy, CheckCircle, X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const SignalPanel = () => {
-  const { activeSignal, getSignalAge } = useSignalStore()
-  const { calculateRiskReward } = useRiskStore()
+  const { activeSignal, scanning } = useSignalStore();
+  const signal = activeSignal || mockActiveSignal;
 
-  const copyToClipboard = (text, label) => {
-    navigator.clipboard.writeText(text)
-    toast.success(`${label} copied to clipboard`)
-  }
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
 
-  const CircularProgress = ({ value, max = 100, size = 60, strokeWidth = 6 }) => {
-    const radius = (size - strokeWidth) / 2
-    const circumference = radius * 2 * Math.PI
-    const offset = circumference - (value / max) * circumference
-
-    return (
-      <div className="relative inline-flex items-center justify-center">
-        <svg width={size} height={size} className="transform -rotate-90">
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="currentColor"
-            strokeWidth={strokeWidth}
-            fill="transparent"
-            className="text-dark-border"
-          />
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="currentColor"
-            strokeWidth={strokeWidth}
-            fill="transparent"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            className={`transition-all duration-300 ${
-              value >= 80 ? 'text-bull' : value >= 60 ? 'text-warning-500' : 'text-bear'
-            }`}
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-bold text-dark-text">{value}</span>
-        </div>
-      </div>
-    )
-  }
-
-  const RiskRewardBar = ({ ratio }) => {
-    const maxRatio = 5
-    const percentage = Math.min((ratio / maxRatio) * 100, 100)
-    
-    return (
-      <div className="w-full">
-        <div className="flex justify-between text-xs text-dark-muted mb-1">
-          <span>Risk</span>
-          <span>Reward</span>
-        </div>
-        <div className="w-full bg-dark-border rounded-full h-2">
-          <div 
-            className={`h-2 rounded-full transition-all duration-300 ${
-              ratio >= 2 ? 'bg-bull' : ratio >= 1.5 ? 'bg-warning-500' : 'bg-bear'
-            }`}
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-        <div className="text-center text-xs text-dark-muted mt-1">
-          1:{ratio.toFixed(1)}
-        </div>
-      </div>
-    )
-  }
-
-  const SessionIcon = ({ session }) => {
-    const icons = {
-      asia: '🌏',
-      london: '🇬🇧',
-      new_york: '🇺🇸'
-    }
-    return <span className="text-lg">{icons[session] || '🌍'}</span>
-  }
-
-  if (!activeSignal) {
-    return (
-      <div className="h-full bg-dark-surface border border-dark-border rounded-lg p-4">
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-dark-border rounded-full flex items-center justify-center mx-auto mb-3">
-              <TrendingUp className="w-8 h-8 text-dark-muted" />
-            </div>
-            <h3 className="text-dark-text font-medium mb-2">No Active Signal</h3>
-            <p className="text-dark-muted text-sm">
-              Waiting for confluence conditions to be met
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const riskReward = calculateRiskReward(
-    activeSignal.entry_price,
-    activeSignal.stop_loss,
-    activeSignal.take_profit
-  )
+  const formatTime = (timestamp) => {
+    const minutes = Math.floor((Date.now() - timestamp) / 60000);
+    return minutes < 60 ? `${minutes} min ago` : `${Math.floor(minutes / 60)} hr ago`;
+  };
 
   return (
-    <div className="h-full bg-dark-surface border border-dark-border rounded-lg p-4 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-dark-text font-semibold">Active Signal</h3>
-        <div className="flex items-center space-x-2">
-          <Clock className="w-4 h-4 text-dark-muted" />
-          <span className="text-xs text-dark-muted">
-            {getSignalAge(activeSignal)}
-          </span>
-        </div>
-      </div>
+    <div className="w-70 border-l border-[var(--border)] flex flex-col overflow-y-auto" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      {/* Active Signal Card */}
+      {signal ? (
+        <div data-testid="active-signal-card" className="m-3 rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+          {/* Header */}
+          <div className="p-3 flex items-center justify-between" style={{ backgroundColor: signal.type === 'BUY' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
+            <div className="flex items-center gap-2">
+              {signal.type === 'BUY' ? <TrendingUp className="w-5 h-5 text-white" /> : <TrendingDown className="w-5 h-5 text-white" />}
+              <span className="font-semibold text-white">{signal.type} SIGNAL</span>
+            </div>
+          </div>
 
-      {/* Direction Badge */}
-      <div className="flex items-center justify-center">
-        <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold ${
-          activeSignal.direction === 'BUY' 
-            ? 'bg-bull/20 text-bull' 
-            : 'bg-bear/20 text-bear'
-        }`}>
-          {activeSignal.direction === 'BUY' ? (
-            <TrendingUp className="w-5 h-5" />
-          ) : (
-            <TrendingDown className="w-5 h-5" />
-          )}
-          <span>{activeSignal.direction}</span>
-        </div>
-      </div>
+          <div className="p-3">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{signal.symbol} • {signal.timeframe}</span>
+              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{formatTime(signal.timestamp)}</span>
+            </div>
+            <div className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{signal.session}</div>
 
-      {/* Confluence Score */}
-      <div className="text-center">
-        <div className="flex justify-center mb-2">
-          <CircularProgress value={activeSignal.confluence_score || 0} />
-        </div>
-        <p className="text-xs text-dark-muted">Confluence Score</p>
-      </div>
+            {/* Confluence Score */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Confluence Score</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{signal.confluence_score}/100</span>
+              </div>
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${signal.confluence_score}%`,
+                    backgroundColor: signal.confluence_score >= 80 ? 'var(--accent-green)' : signal.confluence_score >= 60 ? 'var(--accent-yellow)' : 'var(--accent-red)'
+                  }}
+                ></div>
+              </div>
+            </div>
 
-      {/* Price Levels */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between p-2 bg-dark-bg rounded border border-dark-border">
-          <div className="flex items-center space-x-2">
-            <Target className="w-4 h-4 text-blue-400" />
-            <span className="text-sm text-dark-muted">Entry</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="font-mono text-dark-text">
-              ${activeSignal.entry_price?.toFixed(2)}
-            </span>
-            <button
-              onClick={() => copyToClipboard(activeSignal.entry_price?.toString(), 'Entry price')}
-              className="text-dark-muted hover:text-dark-text transition-colors"
-            >
-              <Copy className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-2 bg-dark-bg rounded border border-dark-border">
-          <div className="flex items-center space-x-2">
-            <Shield className="w-4 h-4 text-bear" />
-            <span className="text-sm text-dark-muted">Stop Loss</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="font-mono text-dark-text">
-              ${activeSignal.stop_loss?.toFixed(2)}
-            </span>
-            <button
-              onClick={() => copyToClipboard(activeSignal.stop_loss?.toString(), 'Stop loss')}
-              className="text-dark-muted hover:text-dark-text transition-colors"
-            >
-              <Copy className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-2 bg-dark-bg rounded border border-dark-border">
-          <div className="flex items-center space-x-2">
-            <Target className="w-4 h-4 text-bull" />
-            <span className="text-sm text-dark-muted">Take Profit</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="font-mono text-dark-text">
-              ${activeSignal.take_profit?.toFixed(2)}
-            </span>
-            <button
-              onClick={() => copyToClipboard(activeSignal.take_profit?.toString(), 'Take profit')}
-              className="text-dark-muted hover:text-dark-text transition-colors"
-            >
-              <Copy className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Risk:Reward Ratio */}
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-dark-muted">Risk:Reward</span>
-        </div>
-        <RiskRewardBar ratio={riskReward} />
-      </div>
-
-      {/* ML Approval */}
-      {activeSignal.ml_probability && (
-        <div className="flex items-center justify-between p-2 bg-dark-bg rounded border border-dark-border">
-          <div className="flex items-center space-x-2">
-            <Brain className="w-4 h-4 text-purple-400" />
-            <span className="text-sm text-dark-muted">ML Approval</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className={`text-sm font-medium ${
-              activeSignal.ml_probability >= 0.7 ? 'text-bull' : 'text-warning-500'
-            }`}>
-              ✅ {(activeSignal.ml_probability * 100).toFixed(0)}%
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Session Indicator */}
-      {activeSignal.session && (
-        <div className="flex items-center justify-between p-2 bg-dark-bg rounded border border-dark-border">
-          <div className="flex items-center space-x-2">
-            <Globe className="w-4 h-4 text-blue-400" />
-            <span className="text-sm text-dark-muted">Session</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <SessionIcon session={activeSignal.session} />
-            <span className="text-sm text-dark-text capitalize">
-              {activeSignal.session.replace('_', ' ')}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Timeframe Stack */}
-      {activeSignal.timeframes && (
-        <div className="space-y-2">
-          <span className="text-sm text-dark-muted">Timeframe Analysis</span>
-          <div className="flex items-center justify-center space-x-2">
-            {activeSignal.timeframes.map((tf, index) => (
-              <React.Fragment key={tf}>
-                <div className="px-2 py-1 bg-dark-border rounded text-xs font-mono text-dark-text">
-                  {tf.toUpperCase()}
+            {/* Trade Levels */}
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center justify-between text-sm">
+                <span style={{ color: 'var(--text-secondary)' }}>Entry</span>
+                <div className="flex items-center gap-2">
+                  <span className="monospace font-semibold" style={{ color: 'var(--text-primary)' }}>${signal.entry.toFixed(2)}</span>
+                  <button onClick={() => copyToClipboard(signal.entry.toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
+                    <Copy className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />
+                  </button>
                 </div>
-                {index < activeSignal.timeframes.length - 1 && (
-                  <span className="text-dark-muted">→</span>
-                )}
-              </React.Fragment>
-            ))}
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span style={{ color: 'var(--text-secondary)' }}>Stop</span>
+                <div className="flex items-center gap-2">
+                  <span className="monospace font-semibold" style={{ color: 'var(--accent-red)' }}>${signal.stop_loss.toFixed(2)}</span>
+                  <button onClick={() => copyToClipboard(signal.stop_loss.toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
+                    <Copy className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span style={{ color: 'var(--text-secondary)' }}>Target</span>
+                <div className="flex items-center gap-2">
+                  <span className="monospace font-semibold" style={{ color: 'var(--accent-green)' }}>${signal.take_profit.toFixed(2)}</span>
+                  <button onClick={() => copyToClipboard(signal.take_profit.toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
+                    <Copy className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span style={{ color: 'var(--text-secondary)' }}>R:R</span>
+                <span className="monospace font-semibold" style={{ color: 'var(--text-primary)' }}>1 : {signal.risk_reward.toFixed(1)}</span>
+              </div>
+            </div>
+
+            {/* ML & Risk Info */}
+            <div className="space-y-2 mb-4 p-2 rounded" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="flex items-center gap-2 text-sm">
+                <span>🤖</span>
+                <span style={{ color: 'var(--text-secondary)' }}>ML Filter:</span>
+                <span className="font-semibold" style={{ color: 'var(--accent-green)' }}>✓ {signal.ml_confidence}%</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span>📐</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Risk:</span>
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>${signal.risk_amount} ({signal.risk_percent}%)</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span>📊</span>
+                <span style={{ color: 'var(--text-secondary)' }}>Size:</span>
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{signal.position_size} BTC</span>
+              </div>
+            </div>
+
+            {/* Reasons */}
+            <div className="mb-4">
+              <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>WHY THIS SIGNAL:</div>
+              <div className="space-y-1">
+                {signal.reasons.map((reason, index) => (
+                  <div key={index} className="flex items-start gap-2 text-xs">
+                    <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: 'var(--accent-green)' }} />
+                    <span style={{ color: 'var(--text-primary)' }}>{reason}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <button data-testid="take-trade-button" className="flex-1 py-2 text-sm font-medium rounded transition-colors" style={{ backgroundColor: 'var(--accent-green)', color: 'white' }}>
+                ✓ TAKE TRADE
+              </button>
+              <button data-testid="skip-trade-button" className="flex-1 py-2 text-sm font-medium rounded transition-colors flex items-center justify-center gap-1" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-primary)' }}>
+                <X className="w-4 h-4" /> SKIP
+              </button>
+            </div>
           </div>
         </div>
+      ) : (
+        <div data-testid="scanning-state" className="m-3 p-8 text-center rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+          <div className="w-16 h-16 border-4 border-[var(--accent-blue)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>SCANNING MARKET...</div>
+          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Last scan: 2 minutes ago</div>
+        </div>
       )}
-    </div>
-  )
-}
 
-export default SignalPanel
+      {/* MTF Bias */}
+      <div className="mx-3 mb-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+        <div className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>MTF BIAS</div>
+        <div className="space-y-2">
+          {mockMTFBias.map((bias) => (
+            <div key={bias.timeframe}>
+              <div className="flex items-center justify-between mb-1 text-xs">
+                <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{bias.timeframe}</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold" style={{ color: bias.direction === 'up' ? 'var(--accent-green)' : bias.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)' }}>
+                    {bias.bias}
+                  </span>
+                  {bias.direction === 'up' && <TrendingUp className="w-3 h-3" style={{ color: 'var(--accent-green)' }} />}
+                  {bias.direction === 'down' && <TrendingDown className="w-3 h-3" style={{ color: 'var(--accent-red)' }} />}
+                  {bias.direction === 'neutral' && <Minus className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />}
+                </div>
+              </div>
+              <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${bias.strength}%`,
+                    backgroundColor: bias.direction === 'up' ? 'var(--accent-green)' : bias.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)'
+                  }}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Market Regime */}
+      <div className="mx-3 mb-3 p-3 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+        <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>MARKET REGIME</div>
+        <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+          <span>{mockMarketRegime.icon}</span>
+          <span className="text-sm font-semibold" style={{ color: `var(--accent-${mockMarketRegime.color})` }}>{mockMarketRegime.status}</span>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="mx-3 mb-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+        <div className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>TODAY'S STATS</div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+            <div className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{mockQuickStats.signals_today}</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Signals</div>
+          </div>
+          <div className="text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+            <div className="text-xl font-bold mb-1" style={{ color: 'var(--accent-green)' }}>{mockQuickStats.win_rate}%</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Win %</div>
+          </div>
+          <div className="text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+            <div className="text-xl font-bold mb-1" style={{ color: 'var(--accent-green)' }}>+{mockQuickStats.pnl_r}R</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>P&L</div>
+          </div>
+          <div className="text-center p-2 rounded" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+            <div className="text-xl font-bold mb-1" style={{ color: 'var(--accent-red)' }}>{mockQuickStats.drawdown}%</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>DD</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Risk Meter */}
+      <div className="mx-3 mb-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+        <div className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>RISK METER</div>
+        <div className="relative w-32 h-32 mx-auto">
+          <svg className="transform -rotate-90" width="128" height="128">
+            <circle
+              cx="64"
+              cy="64"
+              r="56"
+              stroke="var(--bg-secondary)"
+              strokeWidth="12"
+              fill="none"
+            />
+            <circle
+              cx="64"
+              cy="64"
+              r="56"
+              stroke={mockRiskMeter.current < 40 ? 'var(--accent-green)' : mockRiskMeter.current < 70 ? 'var(--accent-yellow)' : 'var(--accent-red)'}
+              strokeWidth="12"
+              fill="none"
+              strokeDasharray={`${(mockRiskMeter.current / 100) * 352} 352`}
+              strokeLinecap="round"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{mockRiskMeter.current}%</div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Used</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SignalPanel;
