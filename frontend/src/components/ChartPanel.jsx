@@ -1,17 +1,140 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createChart, CandlestickSeries, LineSeries } from 'lightweight-charts';
-import { useChartStore, useSignalStore } from '../stores';
+import { useChartStore, useSignalStore, usePriceStore } from '../stores';
 import { generateMockCandles, mockOrderBlocks, mockFVGs, mockLiquidityZones } from '../data/mockData';
+import { fetchData } from '../services/api';
 import { Camera, RotateCcw, TrendingUp } from 'lucide-react';
 
 const ChartPanel = () => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
-  const { overlays, toggleOverlay } = useChartStore();
+  const { 
+    symbol, 
+    timeframe,
+    showOrderBlocks, 
+    showFVGs, 
+    showLiquidityZones, 
+    showBosChoch, 
+    showSessionBoxes, 
+    showHTFLevels,
+    toggleOrderBlocks,
+    toggleFVGs,
+    toggleLiquidityZones,
+    toggleBosChoch,
+    toggleSessionBoxes,
+    toggleHTFLevels
+  } = useChartStore();
   const { scanning, updateLastAnalyzed } = useSignalStore();
+  const { prices, isConnected } = usePriceStore();
   const [analyzing, setAnalyzing] = useState(false);
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Load real market data
+  useEffect(() => {
+    const loadChartData = async () => {
+      setLoading(true);
+      try {
+        // Use the current symbol and timeframe from chart store
+        const currentSymbol = symbol || 'BTCUSDT';
+        const currentTimeframe = timeframe || '15m';
+        console.log(`Loading chart data for ${currentSymbol} ${currentTimeframe}...`);
+        
+        // Fetch real market data
+        const data = await fetchData(currentSymbol, currentTimeframe, 500);
+        
+        if (data && data.length > 0) {
+          // Convert to chart format
+          const chartCandles = data.map(candle => ({
+            time: Math.floor(new Date(candle.timestamp).getTime() / 1000),
+            open: parseFloat(candle.open),
+            high: parseFloat(candle.high),
+            low: parseFloat(candle.low),
+            close: parseFloat(candle.close),
+            volume: parseFloat(candle.volume || 0)
+          }));
+          
+          // Sort by time to ensure proper order
+          chartCandles.sort((a, b) => a.time - b.time);
+          
+          setChartData(chartCandles);
+          console.log(`Loaded ${chartCandles.length} candles for ${currentSymbol} ${currentTimeframe}`);
+          
+          // Update the chart series if it exists
+          if (candleSeriesRef.current) {
+            candleSeriesRef.current.setData(chartCandles);
+            // Fit content to show all data smoothly
+            if (chartRef.current) {
+              setTimeout(() => {
+                chartRef.current.timeScale().fitContent();
+              }, 100);
+            }
+          }
+        } else {
+          console.warn('No real data available, using mock data');
+          // Fallback to mock data but with current price
+          const currentPrice = prices[symbol]?.price || 66000;
+          const mockCandles = generateMockCandles(500, currentPrice);
+          setChartData(mockCandles);
+          
+          if (candleSeriesRef.current) {
+            candleSeriesRef.current.setData(mockCandles);
+            if (chartRef.current) {
+              setTimeout(() => {
+                chartRef.current.timeScale().fitContent();
+              }, 100);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load chart data:', error);
+        // Fallback to mock data with current price
+        const currentPrice = prices[symbol]?.price || 66000;
+        const mockCandles = generateMockCandles(500, currentPrice);
+        setChartData(mockCandles);
+        
+        if (candleSeriesRef.current) {
+          candleSeriesRef.current.setData(mockCandles);
+          if (chartRef.current) {
+            setTimeout(() => {
+              chartRef.current.timeScale().fitContent();
+            }, 100);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChartData();
+  }, [symbol, timeframe, fetchData]); // Reload when symbol OR timeframe changes
+
+  // Update chart with real-time price updates
+  useEffect(() => {
+    if (!candleSeriesRef.current || !isConnected || chartData.length === 0) return;
+    
+    const currentSymbol = symbol || 'BTCUSDT';
+    const currentPrice = prices[currentSymbol];
+    
+    if (currentPrice && currentPrice.price) {
+      // Update the last candle with current price
+      const lastCandle = chartData[chartData.length - 1];
+      if (lastCandle) {
+        const updatedCandle = {
+          ...lastCandle,
+          close: currentPrice.price,
+          high: Math.max(lastCandle.high, currentPrice.price),
+          low: Math.min(lastCandle.low, currentPrice.price)
+        };
+        
+        // Update just the last candle
+        candleSeriesRef.current.update(updatedCandle);
+      }
+    }
+  }, [prices, isConnected, symbol, chartData]);
+
+  // Initialize chart
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
@@ -56,8 +179,10 @@ const ChartPanel = () => {
       wickDownColor: '#ef4444',
     });
 
-    const candles = generateMockCandles(500, 43000);
-    candleSeries.setData(candles);
+    // Set initial data if available
+    if (chartData.length > 0) {
+      candleSeries.setData(chartData);
+    }
 
     chartRef.current = chart;
     candleSeriesRef.current = candleSeries;
@@ -79,12 +204,15 @@ const ChartPanel = () => {
         chartRef.current.remove();
       }
     };
-  }, []);
+  }, [chartData]); // Re-initialize when chart data changes
 
   useEffect(() => {
     if (!chartRef.current) return;
 
-    if (overlays.orderBlocks) {
+    // Clear existing overlays
+    // Note: In a real implementation, you'd want to track and remove specific series
+    
+    if (showOrderBlocks) {
       mockOrderBlocks.forEach((ob) => {
         const lineSeries = chartRef.current.addSeries(LineSeries, {
           color: 'transparent',
@@ -117,7 +245,7 @@ const ChartPanel = () => {
       });
     }
 
-    if (overlays.liquidity) {
+    if (showLiquidityZones) {
       mockLiquidityZones.forEach((liq) => {
         const lineSeries = chartRef.current.addSeries(LineSeries, {
           color: '#8b5cf6',
@@ -133,7 +261,7 @@ const ChartPanel = () => {
         ]);
       });
     }
-  }, [overlays]);
+  }, [showOrderBlocks, showFVGs, showLiquidityZones, showBosChoch, showSessionBoxes, showHTFLevels]);
 
   const handleAnalyze = () => {
     setAnalyzing(true);
@@ -157,6 +285,15 @@ const ChartPanel = () => {
     <div className="flex-1 flex flex-col" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* Chart Container */}
       <div ref={chartContainerRef} data-testid="trading-chart" className="flex-1 relative">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10" style={{ backgroundColor: 'rgba(10, 14, 23, 0.8)' }}>
+            <div className="text-center">
+              <div className="w-12 h-12 border-3 border-[var(--accent-blue)] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <div className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>Loading {timeframe} Chart...</div>
+              <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Fetching {symbol} data...</div>
+            </div>
+          </div>
+        )}
         {analyzing && (
           <div className="absolute inset-0 flex items-center justify-center z-10" style={{ backgroundColor: 'rgba(10, 14, 23, 0.9)' }}>
             <div className="text-center">
@@ -166,28 +303,37 @@ const ChartPanel = () => {
             </div>
           </div>
         )}
+        {!loading && !isConnected && (
+          <div className="absolute top-4 right-4 px-3 py-2 rounded text-xs font-medium" style={{ backgroundColor: 'var(--accent-red)', color: 'white' }}>
+            Chart data may be outdated - WebSocket disconnected
+          </div>
+        )}
+        {!loading && isConnected && (
+          <div className="absolute top-4 right-4 px-3 py-2 rounded text-xs font-medium" style={{ backgroundColor: 'var(--accent-green)', color: 'white' }}>
+            Live Data
+          </div>
+        )}
       </div>
 
       {/* Chart Toolbar */}
       <div className="h-10 border-t border-[var(--border)] flex items-center justify-between px-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
         <div className="flex items-center gap-2">
           {[
-            { key: 'orderBlocks', label: 'OB' },
-            { key: 'fvgs', label: 'FVG' },
-            { key: 'liquidity', label: 'LIQ' },
-            { key: 'structure', label: 'BOS' },
-            { key: 'sessions', label: 'SESSION' },
-            { key: 'levels', label: 'ENTRY' },
-            { key: 'htf', label: 'HTF' },
+            { key: 'orderBlocks', label: 'OB', active: showOrderBlocks, toggle: toggleOrderBlocks },
+            { key: 'fvgs', label: 'FVG', active: showFVGs, toggle: toggleFVGs },
+            { key: 'liquidity', label: 'LIQ', active: showLiquidityZones, toggle: toggleLiquidityZones },
+            { key: 'structure', label: 'BOS', active: showBosChoch, toggle: toggleBosChoch },
+            { key: 'sessions', label: 'SESSION', active: showSessionBoxes, toggle: toggleSessionBoxes },
+            { key: 'htf', label: 'HTF', active: showHTFLevels, toggle: toggleHTFLevels },
           ].map((overlay) => (
             <button
               key={overlay.key}
               data-testid={`overlay-${overlay.key}`}
-              onClick={() => toggleOverlay(overlay.key)}
+              onClick={overlay.toggle}
               className="px-3 py-1 text-xs font-medium rounded transition-colors"
               style={{
-                backgroundColor: overlays[overlay.key] ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
-                color: overlays[overlay.key] ? 'white' : 'var(--text-secondary)'
+                backgroundColor: overlay.active ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
+                color: overlay.active ? 'white' : 'var(--text-secondary)'
               }}
             >
               {overlay.label}

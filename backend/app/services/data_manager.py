@@ -8,6 +8,8 @@ import numpy as np
 import asyncio
 import time
 import sys
+import aiohttp
+import requests
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple, Union
 from dataclasses import dataclass, asdict
@@ -27,6 +29,8 @@ settings = get_settings()
 class DataSource(Enum):
     """Data source enumeration"""
     BINANCE = "binance"
+    FINNHUB = "finnhub"
+    COINMARKETCAP = "coinmarketcap"
     ALPHA_VANTAGE = "alpha_vantage"
     MOCK = "mock"
 
@@ -218,8 +222,9 @@ class DataSourceManager:
     def __init__(self):
         self.sources = {}
         self.priority_order = {
-            'crypto': [DataSource.BINANCE, DataSource.MOCK],
-            'forex': [DataSource.ALPHA_VANTAGE, DataSource.MOCK]
+            'crypto': [DataSource.BINANCE, DataSource.COINMARKETCAP, DataSource.FINNHUB, DataSource.MOCK],
+            'forex': [DataSource.FINNHUB, DataSource.ALPHA_VANTAGE, DataSource.MOCK],
+            'stocks': [DataSource.FINNHUB, DataSource.ALPHA_VANTAGE, DataSource.MOCK]
         }
         self._init_sources()
     
@@ -231,12 +236,32 @@ class DataSourceManager:
                 self.sources[DataSource.BINANCE] = ccxt.binance({
                     'apiKey': settings.BINANCE_API_KEY,
                     'secret': settings.BINANCE_SECRET_KEY,
-                    'sandbox': settings.is_development,
+                    'sandbox': False,  # Use production API for real data
                     'enableRateLimit': True,
                 })
                 logger.info("Binance API initialized")
             else:
                 logger.warning("Binance API credentials not configured")
+            
+            # Initialize Finnhub
+            if settings.FINNHUB_API_KEY:
+                self.sources[DataSource.FINNHUB] = {
+                    'api_key': settings.FINNHUB_API_KEY,
+                    'base_url': 'https://finnhub.io/api/v1'
+                }
+                logger.info("Finnhub API initialized")
+            else:
+                logger.warning("Finnhub API key not configured")
+            
+            # Initialize CoinMarketCap
+            if settings.COINMARKETCAP_API_KEY:
+                self.sources[DataSource.COINMARKETCAP] = {
+                    'api_key': settings.COINMARKETCAP_API_KEY,
+                    'base_url': 'https://pro-api.coinmarketcap.com/v1'
+                }
+                logger.info("CoinMarketCap API initialized")
+            else:
+                logger.warning("CoinMarketCap API key not configured")
             
             # Initialize Alpha Vantage (placeholder)
             alpha_vantage_key = getattr(settings, 'ALPHA_VANTAGE_API_KEY', None)
@@ -256,12 +281,24 @@ class DataSourceManager:
     
     def get_asset_type(self, symbol: str) -> str:
         """Determine asset type from symbol"""
-        if 'USDT' in symbol or 'BTC' in symbol or 'ETH' in symbol:
+        symbol_upper = symbol.upper()
+        
+        # Crypto patterns
+        crypto_patterns = ['USDT', 'BTC', 'ETH', 'BNB', 'ADA', 'DOT', 'LINK', 'UNI', 'MATIC', 'SOL']
+        if any(pattern in symbol_upper for pattern in crypto_patterns):
             return 'crypto'
-        elif any(fx in symbol for fx in ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD']):
+        
+        # Forex patterns
+        forex_patterns = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'NZD']
+        if any(fx in symbol_upper for fx in forex_patterns) and len(symbol_upper) <= 7:
             return 'forex'
-        else:
-            return 'crypto'  # Default to crypto
+        
+        # Stock patterns (typically 1-5 characters)
+        if len(symbol_upper) <= 5 and symbol_upper.isalpha():
+            return 'stocks'
+            
+        # Default to crypto for unknown patterns
+        return 'crypto'
     
     async def fetch_ohlcv(self, symbol: str, timeframe: str, 
                          start: datetime, end: datetime) -> pd.DataFrame:
@@ -269,14 +306,20 @@ class DataSourceManager:
         asset_type = self.get_asset_type(symbol)
         sources_to_try = self.priority_order.get(asset_type, [DataSource.MOCK])
         
+        logger.info(f"Fetching {symbol} {timeframe} data, trying sources: {[s.value for s in sources_to_try]}")
+        
         last_error = None
         
         for source in sources_to_try:
             try:
-                logger.debug(f"Trying {source.value} for {symbol} {timeframe}")
+                logger.info(f"Trying {source.value} for {symbol} {timeframe}")
                 
                 if source == DataSource.BINANCE:
                     df = await self._fetch_binance(symbol, timeframe, start, end)
+                elif source == DataSource.FINNHUB:
+                    df = await self._fetch_finnhub(symbol, timeframe, start, end)
+                elif source == DataSource.COINMARKETCAP:
+                    df = await self._fetch_coinmarketcap(symbol, timeframe, start, end)
                 elif source == DataSource.ALPHA_VANTAGE:
                     df = await self._fetch_alpha_vantage(symbol, timeframe, start, end)
                 elif source == DataSource.MOCK:
@@ -285,12 +328,14 @@ class DataSourceManager:
                     continue
                 
                 if df is not None and not df.empty:
-                    logger.info(f"Successfully fetched {len(df)} candles from {source.value}")
+                    logger.info(f"✅ Successfully fetched {len(df)} candles from {source.value}")
                     return df
+                else:
+                    logger.warning(f"❌ {source.value} returned empty data for {symbol}")
                     
             except Exception as e:
                 last_error = e
-                logger.warning(f"Failed to fetch from {source.value}: {str(e)}")
+                logger.error(f"❌ Failed to fetch from {source.value}: {str(e)}")
                 continue
         
         # All sources failed
@@ -316,27 +361,41 @@ class DataSourceManager:
         
         binance_tf = tf_map.get(timeframe, '1h')
         
-        # Fetch data
-        since = int(start.timestamp() * 1000)
-        limit = min(1000, int((end - start).total_seconds() / 60))  # Rough estimate
+        # For recent data, just get the latest candles without strict date filtering
+        limit = 100  # Get more recent candles
         
-        ohlcv = await asyncio.get_event_loop().run_in_executor(
-            None, 
-            lambda: exchange.fetch_ohlcv(symbol, binance_tf, since, limit)
-        )
+        logger.info(f"Binance fetch: {symbol} {binance_tf}, limit={limit} (recent data)")
         
-        if not ohlcv:
-            return pd.DataFrame()
-        
-        # Convert to DataFrame
-        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-        df['symbol'] = symbol
-        
-        # Filter by date range
-        df = df[(df['timestamp'] >= start) & (df['timestamp'] <= end)]
-        
-        return df.reset_index(drop=True)
+        try:
+            # Get recent data without specifying 'since' to get the latest
+            ohlcv = await asyncio.get_event_loop().run_in_executor(
+                None, 
+                lambda: exchange.fetch_ohlcv(symbol, binance_tf, None, limit)
+            )
+            
+            logger.info(f"Binance raw response: {len(ohlcv) if ohlcv else 0} candles")
+            
+            if not ohlcv:
+                logger.warning("Binance returned no data")
+                return pd.DataFrame()
+            
+            # Convert to DataFrame
+            df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df['symbol'] = symbol
+            
+            logger.info(f"Binance DataFrame created: {len(df)} rows, date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
+            
+            # Return the most recent data (no strict filtering)
+            df = df.sort_values('timestamp').tail(50)  # Keep last 50 candles
+            
+            logger.info(f"Returning {len(df)} recent candles")
+            
+            return df.reset_index(drop=True)
+            
+        except Exception as e:
+            logger.error(f"Binance fetch error: {str(e)}")
+            raise
     
     async def _fetch_alpha_vantage(self, symbol: str, timeframe: str,
                                  start: datetime, end: datetime) -> pd.DataFrame:
@@ -346,6 +405,87 @@ class DataSourceManager:
         
         # This is a placeholder - would need actual Alpha Vantage implementation
         logger.warning("Alpha Vantage implementation is placeholder")
+        return await self._fetch_mock(symbol, timeframe, start, end)
+    
+    async def _fetch_finnhub(self, symbol: str, timeframe: str,
+                           start: datetime, end: datetime) -> pd.DataFrame:
+        """Fetch data from Finnhub API"""
+        if DataSource.FINNHUB not in self.sources:
+            raise Exception("Finnhub not configured")
+        
+        source_config = self.sources[DataSource.FINNHUB]
+        api_key = source_config['api_key']
+        base_url = source_config['base_url']
+        
+        # Convert timeframe to Finnhub resolution
+        resolution_map = {
+            '1m': '1', '5m': '5', '15m': '15', '30m': '30',
+            '1h': '60', '4h': '240', '1d': 'D'
+        }
+        
+        resolution = resolution_map.get(timeframe, '60')
+        
+        # Convert timestamps
+        from_ts = int(start.timestamp())
+        to_ts = int(end.timestamp())
+        
+        # Prepare symbol for Finnhub (uppercase)
+        finnhub_symbol = symbol.upper()
+        
+        url = f"{base_url}/stock/candle"
+        params = {
+            'symbol': finnhub_symbol,
+            'resolution': resolution,
+            'from': from_ts,
+            'to': to_ts,
+            'token': api_key
+        }
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if data.get('s') == 'ok' and 'c' in data:
+                            # Convert to DataFrame
+                            df = pd.DataFrame({
+                                'timestamp': pd.to_datetime(data['t'], unit='s'),
+                                'open': data['o'],
+                                'high': data['h'],
+                                'low': data['l'],
+                                'close': data['c'],
+                                'volume': data['v'],
+                                'symbol': symbol
+                            })
+                            
+                            # Filter by date range
+                            df = df[(df['timestamp'] >= start) & (df['timestamp'] <= end)]
+                            return df.reset_index(drop=True)
+                        else:
+                            logger.warning(f"Finnhub returned no data for {symbol}")
+                            return pd.DataFrame()
+                    else:
+                        logger.error(f"Finnhub API error: {response.status}")
+                        return pd.DataFrame()
+                        
+        except Exception as e:
+            logger.error(f"Error fetching from Finnhub: {str(e)}")
+            return pd.DataFrame()
+    
+    async def _fetch_coinmarketcap(self, symbol: str, timeframe: str,
+                                 start: datetime, end: datetime) -> pd.DataFrame:
+        """Fetch data from CoinMarketCap API"""
+        if DataSource.COINMARKETCAP not in self.sources:
+            raise Exception("CoinMarketCap not configured")
+        
+        source_config = self.sources[DataSource.COINMARKETCAP]
+        api_key = source_config['api_key']
+        base_url = source_config['base_url']
+        
+        # CoinMarketCap doesn't provide OHLCV historical data in free tier
+        # This is a placeholder that would need Pro API access
+        logger.warning("CoinMarketCap OHLCV data requires Pro API - using mock data")
         return await self._fetch_mock(symbol, timeframe, start, end)
     
     async def _fetch_mock(self, symbol: str, timeframe: str,

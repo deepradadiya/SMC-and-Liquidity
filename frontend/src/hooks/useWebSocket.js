@@ -5,7 +5,6 @@ let reconnectTimeout = null;
 
 export const useWebSocket = (onMessage) => {
   const [connected, setConnected] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
   const onMessageRef = useRef(onMessage);
 
   useEffect(() => {
@@ -16,17 +15,18 @@ export const useWebSocket = (onMessage) => {
     const connect = () => {
       try {
         const wsUrl = 'ws://localhost:8000/ws';
+        console.log('Connecting to WebSocket:', wsUrl);
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
-          console.log('WebSocket connected');
+          console.log('✅ WebSocket connected successfully');
           setConnected(true);
-          setDemoMode(false);
         };
 
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            console.log('📨 WebSocket message received:', data.type);
             if (onMessageRef.current) {
               onMessageRef.current(data);
             }
@@ -36,23 +36,22 @@ export const useWebSocket = (onMessage) => {
         };
 
         ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          console.error('❌ WebSocket error:', error);
         };
 
-        ws.onclose = () => {
-          console.log('WebSocket disconnected');
+        ws.onclose = (event) => {
+          console.log('🔌 WebSocket disconnected, code:', event.code, 'reason:', event.reason);
           setConnected(false);
-          setDemoMode(true);
           
-          // Attempt to reconnect after 5 seconds
+          // Attempt to reconnect after 3 seconds
           reconnectTimeout = setTimeout(() => {
-            console.log('Attempting to reconnect...');
+            console.log('🔄 Attempting to reconnect WebSocket...');
             connect();
-          }, 5000);
+          }, 3000);
         };
       } catch (error) {
         console.error('Failed to connect WebSocket:', error);
-        setDemoMode(true);
+        setConnected(false);
       }
     };
 
@@ -71,10 +70,12 @@ export const useWebSocket = (onMessage) => {
   const sendMessage = (message) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
+    } else {
+      console.warn('WebSocket not connected, cannot send message');
     }
   };
 
-  return { connected, demoMode, sendMessage };
+  return { connected, sendMessage };
 };
 
 export default useWebSocket;

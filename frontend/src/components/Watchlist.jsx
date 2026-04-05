@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
-import { useChartStore } from '../stores';
+import { useChartStore, usePriceStore } from '../stores';
 import { mockWatchlist } from '../data/mockData';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 const Watchlist = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { symbol: selectedSymbol, setSymbol } = useChartStore();
+  const { prices, isConnected } = usePriceStore();
+
+  // Create watchlist with real prices
+  const watchlistWithRealPrices = mockWatchlist.map(item => {
+    const realPrice = prices[item.symbol];
+    if (realPrice) {
+      return {
+        ...item,
+        price: realPrice.price || item.price,
+        change: realPrice.change || item.change,
+        volume: realPrice.volume || 0
+      };
+    }
+    return item;
+  });
 
   const renderSparkline = (data) => {
     const width = 60;
@@ -76,7 +91,7 @@ const Watchlist = () => {
 
       {/* Watchlist Items */}
       <div className="flex-1 overflow-y-auto">
-        {mockWatchlist.map((item) => (
+        {watchlistWithRealPrices.map((item) => (
           <button
             key={item.symbol}
             data-testid={`watchlist-item-${item.symbol}`}
@@ -121,8 +136,10 @@ const Watchlist = () => {
       {/* Market Status */}
       <div className="p-3 border-t border-[var(--border)]">
         <div className="flex items-center gap-2 mb-2">
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--accent-green)' }}></span>
-          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Markets Open</span>
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: isConnected ? 'var(--accent-green)' : 'var(--accent-red)' }}></span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            {isConnected ? 'Live Data' : 'Disconnected'}
+          </span>
         </div>
         <button data-testid="add-symbol-footer" className="w-full py-2 text-xs font-medium rounded transition-colors" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}>
           + Add Symbol

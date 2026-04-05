@@ -6,8 +6,8 @@ import ChartPanel from './components/ChartPanel';
 import SignalPanel from './components/SignalPanel';
 import BottomPanel from './components/BottomPanel';
 import useWebSocket from './hooks/useWebSocket';
-import { useSignalStore, useRiskStore, useAlertStore, useChartStore } from './stores';
-import { checkHealth, fetchRiskStatus, fetchSignals } from './services/api';
+import { useSignalStore, useRiskStore, useAlertStore, useChartStore, usePriceStore } from './stores';
+import { checkHealth, fetchRiskStatus, fetchSignals, login } from './services/api';
 import { Info, AlertTriangle } from 'lucide-react';
 
 function App() {
@@ -17,6 +17,7 @@ function App() {
   const { updatePnL, updateRiskMetrics } = useRiskStore();
   const { addAlert } = useAlertStore();
   const { updateSMCData, updateMTFData } = useChartStore();
+  const { updatePrices, setConnectionStatus } = usePriceStore();
 
   // Check backend health on startup
   useEffect(() => {
@@ -25,6 +26,32 @@ function App() {
         const health = await checkHealth();
         if (health && health.status === 'healthy') {
           setBackendStatus('connected');
+          
+          // Try auto-login if no token exists
+          const existingToken = localStorage.getItem('auth_token');
+          if (!existingToken && process.env.REACT_APP_AUTO_LOGIN === 'true') {
+            console.log('Attempting auto-login...');
+            try {
+              const loginResult = await login(
+                process.env.REACT_APP_DEFAULT_USERNAME || 'admin',
+                process.env.REACT_APP_DEFAULT_PASSWORD || 'smc_admin_2024'
+              );
+              if (loginResult && loginResult.access_token) {
+                console.log('Auto-login successful');
+                setBackendStatus('connected');
+                // Wait a moment for token to be set, then load data
+                setTimeout(() => {
+                  loadInitialData();
+                }, 500);
+                return; // Don't load data immediately
+              }
+            } catch (loginError) {
+              console.error('Auto-login failed:', loginError);
+            }
+          } else if (existingToken) {
+            console.log('Using existing auth token');
+          }
+          
           // Load initial data
           loadInitialData();
         } else {
@@ -54,9 +81,9 @@ function App() {
 
       // Load recent signals
       const signals = await fetchSignals(null, 10);
-      if (signals && signals.length > 0) {
+      if (signals && Array.isArray(signals) && signals.length > 0) {
         // Set most recent as active if it's still active
-        const activeSignal = signals.find(s => s.status === 'ACTIVE');
+        const activeSignal = signals.find(s => s && s.status === 'ACTIVE');
         if (activeSignal) {
           setActiveSignal(activeSignal);
         }
@@ -69,58 +96,86 @@ function App() {
   const handleWebSocketMessage = (data) => {
     console.log('WebSocket message:', data);
     
-    switch (data.type) {
-      case 'price_update':
-        // Handle real-time price updates
-        break;
-        
-      case 'new_signal':
-        setActiveSignal(data.signal);
-        addAlert({
-          type: 'signal',
-          title: 'New Trading Signal',
-          message: `${data.signal.signal_type} signal for ${data.signal.symbol}`,
-          severity: 'info'
-        });
-        break;
-        
-      case 'signal_filled':
-        addHistoricalSignal(data.signal);
-        addAlert({
-          type: 'trade',
-          title: 'Signal Filled',
-          message: `${data.signal.signal_type} signal filled at ${data.signal.entry_price}`,
-          severity: 'success'
-        });
-        break;
-        
-      case 'circuit_breaker':
-        addAlert({
-          type: 'risk',
-          title: 'Circuit Breaker Activated',
-          message: 'Daily loss limit reached. Trading halted.',
-          severity: 'error'
-        });
-        break;
-        
-      case 'risk_update':
-        updateRiskMetrics(data.metrics);
-        break;
-        
-      case 'smc_update':
-        updateSMCData(data.smc_data);
-        break;
-        
-      case 'mtf_update':
-        updateMTFData(data.mtf_data);
-        break;
-        
-      default:
-        console.log('Unknown WebSocket message type:', data.type);
+    try {
+      switch (data.type) {
+        case 'connection':
+          console.log('✅ Connected to backend:', data.message);
+          break;
+          
+        case 'price_update':
+          console.log('📈 Price update received:', data.data || data);
+          // Update the price store with real-time data
+          if (data.data && typeof data.data === 'object') {
+            updatePrices(data.data);
+            setConnectionStatus(true);
+          }
+          break;
+          
+        case 'new_signal':
+          if (data.signal) {
+            setActiveSignal(data.signal);
+            addAlert({
+              type: 'signal',
+              title: 'New Trading Signal',
+              message: `${data.signal.signal_type || 'Unknown'} signal for ${data.signal.symbol || 'Unknown'}`,
+              severity: 'info'
+            });
+          }
+          break;
+          
+        case 'signal_filled':
+          if (data.signal) {
+            addHistoricalSignal(data.signal);
+            addAlert({
+              type: 'trade',
+              title: 'Signal Filled',
+              message: `${data.signal.signal_type || 'Unknown'} signal filled at ${data.signal.entry_price || 'Unknown'}`,
+              severity: 'success'
+            });
+          }
+          break;
+          
+        case 'circuit_breaker':
+          addAlert({
+            type: 'risk',
+            title: 'Circuit Breaker Activated',
+            message: 'Daily loss limit reached. Trading halted.',
+            severity: 'error'
+          });
+          break;
+          
+        case 'risk_update':
+          if (data.metrics) {
+            updateRiskMetrics(data.metrics);
+          }
+          break;
+          
+        case 'smc_update':
+          if (data.smc_data) {
+            updateSMCData(data.smc_data);
+          }
+          break;
+          
+        case 'mtf_update':
+          if (data.mtf_data) {
+            updateMTFData(data.mtf_data);
+          }
+          break;
+          
+        default:
+          console.log('Unknown WebSocket message type:', data.type);
+      }
+    } catch (error) {
+      console.error('Error handling WebSocket message:', error, data);
     }
   };
 
-  const { connected, demoMode } = useWebSocket(handleWebSocketMessage);
+  const { connected } = useWebSocket(handleWebSocketMessage);
+
+  // Update price store connection status when WebSocket status changes
+  React.useEffect(() => {
+    setConnectionStatus(connected);
+  }, [connected, setConnectionStatus]);
 
   const getBannerConfig = () => {
     if (backendStatus === 'checking') {
@@ -129,19 +184,20 @@ function App() {
         icon: Info,
         message: '🔄 Checking backend connection...'
       };
-    } else if (backendStatus === 'disconnected' || !connected) {
+    } else if (backendStatus === 'disconnected') {
       return {
         color: 'var(--accent-red)',
         icon: AlertTriangle,
         message: '⚠️ DEMO MODE — Backend disconnected. Connect backend at localhost:8000 for live data'
       };
-    } else if (demoMode) {
+    } else if (!connected) {
       return {
         color: 'var(--accent-yellow)',
-        icon: Info,
-        message: '📋 DEMO MODE — Limited functionality. Full features available with live backend'
+        icon: AlertTriangle,
+        message: '⚠️ WebSocket disconnected — Reconnecting for real-time updates...'
       };
     }
+    // If backend is connected AND WebSocket is connected, no banner (live mode)
     return null;
   };
 

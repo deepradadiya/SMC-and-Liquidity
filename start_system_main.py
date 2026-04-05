@@ -11,25 +11,46 @@ import time
 import signal
 from pathlib import Path
 
+def check_global_env():
+    """Check if global environment is activated"""
+    venv_path = os.environ.get('VIRTUAL_ENV')
+    if not venv_path or 'globalvenv' not in venv_path:
+        print("❌ Global environment not activated!")
+        print("💡 Please run: source globalvenv/bin/activate")
+        return False
+    
+    print(f"✅ Global environment active: {Path(venv_path).name}")
+    return True
+
 def check_requirements():
     """Check if required dependencies are installed"""
     print("🔍 Checking requirements...")
     
     # Check if we're in globalvenv
-    if 'globalvenv' in sys.executable:
-        print("✅ Using globalvenv environment")
-    else:
-        print("⚠️  Not in globalvenv - activating it is recommended")
+    if not check_global_env():
+        return False
     
     # Check Python dependencies
     try:
         import uvicorn
         import fastapi
         import ccxt
+        import pytz  # This was causing the error
         print("✅ Python backend dependencies found")
     except ImportError as e:
         print(f"❌ Missing Python dependency: {e}")
         print("💡 Run: pip install -r backend/requirements.txt")
+        return False
+    
+    # Test backend imports
+    try:
+        sys.path.append('backend')
+        from app.config import get_settings
+        settings = get_settings()
+        print(f"✅ Backend configuration loaded - Environment: {settings.APP_ENV}")
+        print(f"✅ API Keys: Binance={'✅' if settings.BINANCE_API_KEY else '❌'}, Finnhub={'✅' if settings.FINNHUB_API_KEY else '❌'}")
+    except Exception as e:
+        print(f"❌ Backend import test failed: {e}")
         return False
     
     # Check Node.js
@@ -123,7 +144,10 @@ def main():
         print("📊 Backend API: http://localhost:8000")
         print("🎨 Frontend UI: http://localhost:3000")
         print("📚 API Docs: http://localhost:8000/docs")
+        print("🔌 WebSocket: ws://localhost:8000/ws")
         print("\n✨ Features Available:")
+        print("  • Real Market Data (Binance API)")
+        print("  • Live WebSocket Updates")
         print("  • Modern UI with all 10 modules")
         print("  • MTF Confluence Analysis")
         print("  • Risk Management System")
@@ -135,6 +159,13 @@ def main():
         print("  • Data Management")
         print("  • Authentication & Security")
         print("\n💡 Press Ctrl+C to stop all services")
+        print("🚀 Frontend should now show LIVE MODE (no demo banner)")
+        print("📈 Real-time price updates every 15 seconds")
+        print("\n🔧 Troubleshooting:")
+        print("  • If you see 404 errors, wait for backend to fully start")
+        print("  • If authentication fails, check backend logs")
+        print("  • If prices don't update, check WebSocket connection")
+        print("  • Backend logs will show API calls and errors")
         
         # Wait for processes
         while True:

@@ -54,6 +54,45 @@ class TradingTimeCheckRequest(BaseModel):
     signal_type: str
     utc_time: Optional[str] = None  # ISO format, defaults to current time
 
+@router.get("/data")
+@limiter.limit("60/minute")
+async def get_session_data(
+    request: Request,
+    date: Optional[str] = Query(None, description="Date in YYYY-MM-DD format"),
+    current_user: UserInfo = Depends(get_current_user)
+):
+    """
+    Get session data for a specific date or current session
+    
+    Returns session information, trading hours, and market activity
+    """
+    try:
+        current_time = datetime.utcnow()
+        current_session = session_manager.get_current_session(current_time)
+        
+        # Basic session data
+        session_data = {
+            "date": date or current_time.strftime("%Y-%m-%d"),
+            "current_session": current_session.name if current_session else "None",
+            "is_trading_hours": current_session is not None,
+            "session_overlap": False,  # Simplified for now
+            "optimal_pairs": ["BTCUSDT", "ETHUSDT", "EURUSD", "GBPUSD"],
+            "session_times": {
+                "sydney": {"open": "22:00", "close": "07:00", "timezone": "UTC"},
+                "tokyo": {"open": "00:00", "close": "09:00", "timezone": "UTC"},
+                "london": {"open": "08:00", "close": "17:00", "timezone": "UTC"},
+                "new_york": {"open": "13:00", "close": "22:00", "timezone": "UTC"}
+            },
+            "market_activity": "high" if current_session else "low",
+            "timestamp": current_time.isoformat()
+        }
+        
+        return session_data
+        
+    except Exception as e:
+        logger.error(f"Failed to get session data: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get session data: {str(e)}")
+
 @router.get("/status", response_model=SessionStatusResponse)
 @limiter.limit("60/minute")
 async def get_session_status(

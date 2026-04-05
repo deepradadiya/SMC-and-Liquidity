@@ -399,3 +399,104 @@
 [2026-04-02 18:15:12] [INFO] [app.services.data_manager] Successfully fetched 42 candles from mock
 [2026-04-02 18:15:12] [INFO] [app.services.data_manager] Retrieved 42 candles for ETHUSDT 4h
 [2026-04-02 18:15:12] [INFO] [app.services.data_manager] Cache preload completed: 4 successful, 0 failed
+[2026-04-05 04:37:08] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Binance API credentials not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Finnhub API key not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] CoinMarketCap API key not configured
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Binance API credentials not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Finnhub API key not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] CoinMarketCap API key not configured
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from coinmarketcap: CoinMarketCap not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from finnhub: Finnhub not configured
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Generating mock data for BTCUSDT 1h
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Successfully fetched 168 candles from mock
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Retrieved 168 candles for BTCUSDT 1h
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from binance: Binance not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from coinmarketcap: CoinMarketCap not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from finnhub: Finnhub not configured
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Generating mock data for ETHUSDT 1h
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Successfully fetched 168 candles from mock
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Retrieved 168 candles for ETHUSDT 1h
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from finnhub: Finnhub not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from alpha_vantage: Alpha Vantage not configured
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Generating mock data for AAPL 1d
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Successfully fetched 7 candles from mock
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Retrieved 7 candles for AAPL 1d
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from finnhub: Finnhub not configured
+[2026-04-05 04:37:08] [WARNING] [app.services.data_manager] Failed to fetch from alpha_vantage: Alpha Vantage not configured
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Generating mock data for EURUSD 1h
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Successfully fetched 168 candles from mock
+[2026-04-05 04:37:08] [INFO] [app.services.data_manager] Retrieved 168 candles for EURUSD 1h
+[2026-04-05 04:38:34] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-05 04:38:34] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-05 04:38:35] [INFO] [app.services.data_manager] Successfully fetched 19 candles from binance
+[2026-04-05 04:38:35] [INFO] [app.services.data_manager] Retrieved 19 candles for BTCUSDT 1h
+[2026-04-05 04:38:35] [ERROR] [app.services.data_manager] Finnhub API error: 403
+[2026-04-05 04:38:35] [WARNING] [app.services.data_manager] Failed to fetch from alpha_vantage: Alpha Vantage not configured
+[2026-04-05 04:38:35] [INFO] [app.services.data_manager] Generating mock data for AAPL 1d
+[2026-04-05 04:38:35] [INFO] [app.services.data_manager] Successfully fetched 1 candles from mock
+[2026-04-05 04:38:35] [INFO] [app.services.data_manager] Retrieved 1 candles for AAPL 1d
+[2026-04-05 04:44:12] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-05 04:44:12] [INFO] [app.services.session_manager] Session database initialized
+[2026-04-05 04:44:12] [INFO] [app.services.session_manager] Session Manager initialized with 3 trading sessions
+[2026-04-05 04:44:12] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-05 04:44:12] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-05 04:44:12] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-05 04:44:12] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-05 04:44:12] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-05 04:44:12] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] Risk management database initialized
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] Daily state loaded: Balance $10000.0, Open trades: 0
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] RiskManager initialized with balance: $10000.0
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] Risk management database initialized
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] Daily state loaded: Balance $10000.0, Open trades: 0
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] RiskManager initialized with balance: $10000.0
+[2026-04-05 04:44:13] [INFO] [app.strategies.smc_engine] Precise SMC Engine initialized
+[2026-04-05 04:44:13] [INFO] [app.strategies.smc_engine] Precise SMC Engine initialized
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] Risk management database initialized
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] Daily state loaded: Balance $10000.0, Open trades: 0
+[2026-04-05 04:44:13] [INFO] [app.services.risk_manager] RiskManager initialized with balance: $10000.0
+[2026-04-05 04:44:13] [INFO] [app.services.backtester] Backtest database initialized
+[2026-04-05 04:44:13] [INFO] [app.services.backtester] Advanced Backtester initialized
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter] Rate limiting enabled with the following limits:
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/auth/login: 5/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/auth/refresh: 10/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/analysis/*: 10/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/smc/*: 10/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/mtf/*: 10/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/backtest/*: 5/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/advanced-backtest/*: 5/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/signals/*: 30/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/risk/*: 20/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   /api/data/*: 60/minute
+[2026-04-05 04:44:14] [INFO] [app.utils.rate_limiter]   *: 100/minute
+[2026-04-05 04:44:14] [INFO] [app.ml.signal_filter] No existing model found
+[2026-04-05 04:44:14] [INFO] [app.strategies.smc_engine] Precise SMC Engine initialized
+[2026-04-05 04:44:14] [INFO] [app.strategies.smc_engine] Precise SMC Engine initialized
+[2026-04-05 04:44:14] [INFO] [app.services.risk_manager] Risk management database initialized
+[2026-04-05 04:44:14] [INFO] [app.services.risk_manager] Daily state loaded: Balance $10000.0, Open trades: 0
+[2026-04-05 04:44:14] [INFO] [app.services.risk_manager] RiskManager initialized with balance: $10000.0
+[2026-04-05 04:44:14] [INFO] [app.services.backtester] Backtest database initialized
+[2026-04-05 04:44:14] [INFO] [app.services.backtester] Advanced Backtester initialized
+[2026-04-05 04:44:14] [INFO] [app.ml.training_data_generator] ML training data table initialized
+[2026-04-05 04:44:14] [INFO] [app.services.alert_manager] Alert database initialized
+[2026-04-05 04:44:14] [INFO] [app.services.alert_manager] Alert Manager initialized with multi-channel support
+[2026-04-05 04:44:14] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log

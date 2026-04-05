@@ -1,6 +1,6 @@
 // Generate realistic mock data for the SMC Trading Terminal
 
-export const generateMockCandles = (count = 500, startPrice = 43000) => {
+export const generateMockCandles = (count = 500, startPrice = 66000) => {
   const candles = [];
   let currentTime = Date.now() - count * 15 * 60 * 1000; // 15-minute candles
   let price = startPrice;
@@ -34,8 +34,8 @@ export const mockOrderBlocks = [
   {
     id: 'ob1',
     type: 'bullish',
-    price_low: 42800,
-    price_high: 42950,
+    price_low: 65800,
+    price_high: 65950,
     formed_at: Date.now() - 7200000,
     status: 'active',
     time_start: (Date.now() - 7200000) / 1000,
@@ -44,8 +44,8 @@ export const mockOrderBlocks = [
   {
     id: 'ob2',
     type: 'bearish',
-    price_low: 43800,
-    price_high: 44000,
+    price_low: 67800,
+    price_high: 68000,
     formed_at: Date.now() - 10800000,
     status: 'active',
     time_start: (Date.now() - 10800000) / 1000,
@@ -54,8 +54,8 @@ export const mockOrderBlocks = [
   {
     id: 'ob3',
     type: 'bullish',
-    price_low: 42200,
-    price_high: 42400,
+    price_low: 65200,
+    price_high: 65400,
     formed_at: Date.now() - 14400000,
     status: 'mitigated',
     time_start: (Date.now() - 14400000) / 1000,
@@ -67,8 +67,8 @@ export const mockFVGs = [
   {
     id: 'fvg1',
     type: 'bullish',
-    price_low: 43100,
-    price_high: 43300,
+    price_low: 66100,
+    price_high: 66300,
     fill_percent: 23,
     time_start: (Date.now() - 5400000) / 1000,
     time_end: (Date.now() - 1800000) / 1000
@@ -76,8 +76,8 @@ export const mockFVGs = [
   {
     id: 'fvg2',
     type: 'bearish',
-    price_low: 43600,
-    price_high: 43750,
+    price_low: 66600,
+    price_high: 66750,
     fill_percent: 67,
     time_start: (Date.now() - 9000000) / 1000,
     time_end: (Date.now() - 5400000) / 1000
@@ -85,8 +85,8 @@ export const mockFVGs = [
   {
     id: 'fvg3',
     type: 'bullish',
-    price_low: 42500,
-    price_high: 42650,
+    price_low: 65500,
+    price_high: 65650,
     fill_percent: 8,
     time_start: (Date.now() - 12600000) / 1000,
     time_end: (Date.now() - 9000000) / 1000
@@ -97,21 +97,21 @@ export const mockLiquidityZones = [
   {
     id: 'liq1',
     type: 'EQH',
-    price: 44150,
+    price: 67150,
     swept: false,
     time: (Date.now() - 3600000) / 1000
   },
   {
     id: 'liq2',
     type: 'EQL',
-    price: 42150,
+    price: 65150,
     swept: true,
     time: (Date.now() - 7200000) / 1000
   },
   {
     id: 'liq3',
     type: 'EQH',
-    price: 43900,
+    price: 66900,
     swept: false,
     time: (Date.now() - 10800000) / 1000
   }
@@ -142,9 +142,9 @@ export const mockActiveSignal = {
   session: 'London Open',
   timestamp: Date.now() - 120000,
   confluence_score: 85,
-  entry: 43250.00,
-  stop_loss: 42800.00,
-  take_profit: 44150.00,
+  entry: 66250.00,
+  stop_loss: 65800.00,
+  take_profit: 67150.00,
   risk_reward: 2.1,
   ml_confidence: 71,
   risk_amount: 215,
@@ -167,11 +167,8 @@ export const mockHistoricalTrades = [
 ];
 
 export const mockWatchlist = [
-  { symbol: 'BTCUSDT', name: 'BTC/USDT', price: 43250.00, change: 2.3, signal: 'buy', sparkline: [42800, 42900, 43000, 42850, 42950, 43100, 43250] },
-  { symbol: 'ETHUSDT', name: 'ETH/USDT', price: 2285.50, change: -1.2, signal: 'none', sparkline: [2310, 2305, 2300, 2295, 2290, 2288, 2285] },
-  { symbol: 'EURUSD', name: 'EUR/USD', price: 1.0875, change: 0.5, signal: 'none', sparkline: [1.0865, 1.0868, 1.0870, 1.0872, 1.0873, 1.0874, 1.0875] },
-  { symbol: 'GBPUSD', name: 'GBP/USD', price: 1.2650, change: 1.1, signal: 'buy', sparkline: [1.2580, 1.2600, 1.2610, 1.2620, 1.2635, 1.2645, 1.2650] },
-  { symbol: 'XAUUSD', name: 'XAU/USD', price: 2034.50, change: -0.8, signal: 'sell', sparkline: [2045, 2042, 2040, 2038, 2036, 2035, 2034] }
+  { symbol: 'BTCUSDT', name: 'BTC/USDT', price: 66895.86, change: 2.3, signal: 'buy', sparkline: [65800, 65900, 66000, 65850, 65950, 66100, 66895] },
+  { symbol: 'ETHUSDT', name: 'ETH/USDT', price: 2038.08, change: -0.01, signal: 'none', sparkline: [2060, 2055, 2050, 2045, 2040, 2039, 2038] }
 ];
 
 export const mockMTFBias = [

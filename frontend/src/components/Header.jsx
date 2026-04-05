@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useChartStore, useRiskStore, useAlertStore } from '../stores';
+import { useChartStore, useRiskStore, useAlertStore, usePriceStore } from '../stores';
 import { Bell, Settings, Moon, Sun, Zap, Wifi, WifiOff } from 'lucide-react';
 import SymbolSearchModal from './modals/SymbolSearchModal';
 import SettingsModal from './modals/SettingsModal';
@@ -9,16 +9,20 @@ const timeframes = ['1m', '5m', '15m', '1h', '4h', '1D'];
 const htfOptions = ['1h', '4h', '1D'];
 
 const Header = ({ backendStatus = 'disconnected' }) => {
-  const { symbol, timeframe, htf, setTimeframe, setHTF } = useChartStore();
+  const { symbol, timeframe, htfTimeframe, setSymbol, setTimeframe, setHTFTimeframe } = useChartStore();
   const { balance, todayPnL, todayPnLPercent } = useRiskStore();
   const { unreadCount } = useAlertStore();
+  const { prices, isConnected } = usePriceStore();
   const [darkMode, setDarkMode] = useState(true);
   const [liveMode, setLiveMode] = useState(false);
   const [showSymbolSearch, setShowSymbolSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [session, setSession] = useState('London Open');
-  const [currentPrice, setCurrentPrice] = useState(43250.00);
-  const [priceChange, setPriceChange] = useState(2.3);
+
+  // Get current price and change from price store
+  const currentSymbolData = prices[symbol] || {};
+  const currentPrice = currentSymbolData.price || 0;
+  const priceChange = currentSymbolData.change || 0;
 
   // Load session data when backend is connected
   useEffect(() => {
@@ -98,18 +102,41 @@ const Header = ({ backendStatus = 'disconnected' }) => {
         {/* Center */}
         <div className="flex items-center gap-3 flex-1 justify-center">
           {/* Symbol Selector */}
-          <button
-            data-testid="symbol-selector-button"
-            onClick={() => setShowSymbolSearch(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-colors"
-            style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
-          >
-            <span className="monospace font-semibold">{symbol}</span>
-            <span style={{ color: 'var(--accent-green)' }}>${currentPrice.toLocaleString()}</span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setSymbol('BTCUSDT')}
+              className="px-3 py-1.5 text-xs font-medium rounded transition-colors"
+              style={{
+                backgroundColor: symbol === 'BTCUSDT' ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
+                color: symbol === 'BTCUSDT' ? 'white' : 'var(--text-secondary)'
+              }}
+            >
+              BTC
+            </button>
+            <button
+              onClick={() => setSymbol('ETHUSDT')}
+              className="px-3 py-1.5 text-xs font-medium rounded transition-colors"
+              style={{
+                backgroundColor: symbol === 'ETHUSDT' ? 'var(--accent-blue)' : 'var(--bg-tertiary)',
+                color: symbol === 'ETHUSDT' ? 'white' : 'var(--text-secondary)'
+              }}
+            >
+              ETH
+            </button>
+          </div>
+
+          {/* Price Display */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+            <span className="monospace font-semibold" style={{ color: 'var(--text-primary)' }}>
+              ${currentPrice.toLocaleString()}
+            </span>
             <span className="text-xs" style={{ color: priceChange >= 0 ? 'var(--accent-green)' : 'var(--accent-red)' }}>
               {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(1)}%
             </span>
-          </button>
+            {isConnected && (
+              <span className="w-2 h-2 rounded-full pulse" style={{ backgroundColor: 'var(--accent-green)' }}></span>
+            )}
+          </div>
 
           {/* Timeframe Selector */}
           <div className="flex items-center gap-1" data-testid="timeframe-selector">
@@ -134,8 +161,8 @@ const Header = ({ backendStatus = 'disconnected' }) => {
             <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>HTF:</span>
             <select
               data-testid="htf-selector"
-              value={htf}
-              onChange={(e) => setHTF(e.target.value)}
+              value={htfTimeframe}
+              onChange={(e) => setHTFTimeframe(e.target.value)}
               className="px-2 py-1.5 text-xs rounded border-0 outline-none"
               style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
             >

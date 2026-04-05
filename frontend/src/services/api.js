@@ -364,7 +364,10 @@ export const testAlert = async (type, message) => {
 // Health Check
 export const checkHealth = async () => {
   try {
-    const response = await api.get('/health');
+    // Use the correct health endpoint (not under /api)
+    const response = await axios.get(`${BACKEND_URL}/health`, {
+      timeout: 5000
+    });
     return response.data;
   } catch (error) {
     console.error('Health check failed:', error);

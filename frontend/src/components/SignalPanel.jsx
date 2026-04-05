@@ -31,23 +31,23 @@ const SignalPanel = () => {
 
           <div className="p-3">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{signal.symbol} • {signal.timeframe}</span>
-              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{formatTime(signal.timestamp)}</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{signal.symbol || 'N/A'} • {signal.timeframe || 'N/A'}</span>
+              <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{formatTime(signal.timestamp || Date.now())}</span>
             </div>
-            <div className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{signal.session}</div>
+            <div className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{signal.session || 'Unknown Session'}</div>
 
             {/* Confluence Score */}
             <div className="mb-4">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Confluence Score</span>
-                <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{signal.confluence_score}/100</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>{signal.confluence_score || 0}/100</span>
               </div>
               <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
-                    width: `${signal.confluence_score}%`,
-                    backgroundColor: signal.confluence_score >= 80 ? 'var(--accent-green)' : signal.confluence_score >= 60 ? 'var(--accent-yellow)' : 'var(--accent-red)'
+                    width: `${signal.confluence_score || 0}%`,
+                    backgroundColor: (signal.confluence_score || 0) >= 80 ? 'var(--accent-green)' : (signal.confluence_score || 0) >= 60 ? 'var(--accent-yellow)' : 'var(--accent-red)'
                   }}
                 ></div>
               </div>
@@ -58,8 +58,8 @@ const SignalPanel = () => {
               <div className="flex items-center justify-between text-sm">
                 <span style={{ color: 'var(--text-secondary)' }}>Entry</span>
                 <div className="flex items-center gap-2">
-                  <span className="monospace font-semibold" style={{ color: 'var(--text-primary)' }}>${signal.entry.toFixed(2)}</span>
-                  <button onClick={() => copyToClipboard(signal.entry.toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
+                  <span className="monospace font-semibold" style={{ color: 'var(--text-primary)' }}>${(signal.entry || 0).toFixed(2)}</span>
+                  <button onClick={() => copyToClipboard((signal.entry || 0).toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
                     <Copy className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />
                   </button>
                 </div>
@@ -67,8 +67,8 @@ const SignalPanel = () => {
               <div className="flex items-center justify-between text-sm">
                 <span style={{ color: 'var(--text-secondary)' }}>Stop</span>
                 <div className="flex items-center gap-2">
-                  <span className="monospace font-semibold" style={{ color: 'var(--accent-red)' }}>${signal.stop_loss.toFixed(2)}</span>
-                  <button onClick={() => copyToClipboard(signal.stop_loss.toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
+                  <span className="monospace font-semibold" style={{ color: 'var(--accent-red)' }}>${(signal.stop_loss || 0).toFixed(2)}</span>
+                  <button onClick={() => copyToClipboard((signal.stop_loss || 0).toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
                     <Copy className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />
                   </button>
                 </div>
@@ -76,15 +76,15 @@ const SignalPanel = () => {
               <div className="flex items-center justify-between text-sm">
                 <span style={{ color: 'var(--text-secondary)' }}>Target</span>
                 <div className="flex items-center gap-2">
-                  <span className="monospace font-semibold" style={{ color: 'var(--accent-green)' }}>${signal.take_profit.toFixed(2)}</span>
-                  <button onClick={() => copyToClipboard(signal.take_profit.toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
+                  <span className="monospace font-semibold" style={{ color: 'var(--accent-green)' }}>${(signal.take_profit || 0).toFixed(2)}</span>
+                  <button onClick={() => copyToClipboard((signal.take_profit || 0).toString())} className="p-1 rounded hover:bg-[var(--bg-hover)] transition-colors">
                     <Copy className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />
                   </button>
                 </div>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span style={{ color: 'var(--text-secondary)' }}>R:R</span>
-                <span className="monospace font-semibold" style={{ color: 'var(--text-primary)' }}>1 : {signal.risk_reward.toFixed(1)}</span>
+                <span className="monospace font-semibold" style={{ color: 'var(--text-primary)' }}>1 : {(signal.risk_reward || 0).toFixed(1)}</span>
               </div>
             </div>
 
@@ -93,17 +93,17 @@ const SignalPanel = () => {
               <div className="flex items-center gap-2 text-sm">
                 <span>🤖</span>
                 <span style={{ color: 'var(--text-secondary)' }}>ML Filter:</span>
-                <span className="font-semibold" style={{ color: 'var(--accent-green)' }}>✓ {signal.ml_confidence}%</span>
+                <span className="font-semibold" style={{ color: 'var(--accent-green)' }}>✓ {signal.ml_confidence || 0}%</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span>📐</span>
                 <span style={{ color: 'var(--text-secondary)' }}>Risk:</span>
-                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>${signal.risk_amount} ({signal.risk_percent}%)</span>
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>${signal.risk_amount || 0} ({signal.risk_percent || 0}%)</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <span>📊</span>
                 <span style={{ color: 'var(--text-secondary)' }}>Size:</span>
-                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{signal.position_size} BTC</span>
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>{signal.position_size || 0} BTC</span>
               </div>
             </div>
 
@@ -111,7 +111,7 @@ const SignalPanel = () => {
             <div className="mb-4">
               <div className="text-xs font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>WHY THIS SIGNAL:</div>
               <div className="space-y-1">
-                {signal.reasons.map((reason, index) => (
+                {(signal.reasons || []).map((reason, index) => (
                   <div key={index} className="flex items-start gap-2 text-xs">
                     <CheckCircle className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: 'var(--accent-green)' }} />
                     <span style={{ color: 'var(--text-primary)' }}>{reason}</span>

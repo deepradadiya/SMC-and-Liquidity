@@ -1,6 +1,9 @@
 import { create } from 'zustand';
 import { mockActiveSignal, mockHistoricalTrades } from '../data/mockData';
 
+// Import individual stores
+export { usePriceStore } from './priceStore';
+
 export const useSignalStore = create((set, get) => ({
   activeSignal: mockActiveSignal,
   historicalSignals: mockHistoricalTrades,

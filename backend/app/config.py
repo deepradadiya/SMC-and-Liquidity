@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     BINANCE_API_KEY: Optional[str] = None
     BINANCE_SECRET_KEY: Optional[str] = None
     
+    # Additional data sources
+    FINNHUB_API_KEY: Optional[str] = None
+    COINMARKETCAP_API_KEY: Optional[str] = None
+    
     # Telegram settings (for notifications)
     TELEGRAM_BOT_TOKEN: Optional[str] = None
     TELEGRAM_CHAT_ID: Optional[str] = None
@@ -130,7 +134,7 @@ class Settings(BaseSettings):
         return self.DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite:///")
     
     class Config:
-        env_file = ".env"
+        env_file = "backend/.env" if os.path.exists("backend/.env") else ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
 

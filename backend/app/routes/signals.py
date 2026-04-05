@@ -62,6 +62,33 @@ async def generate_trading_signals(request: SignalRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Signal generation failed: {str(e)}")
 
+@router.get("/current")
+async def get_current_signals(
+    symbol: Optional[str] = Query(None, description="Symbol filter"),
+    limit: int = Query(50, description="Maximum number of signals to return")
+):
+    """Get current/recent trading signals"""
+    try:
+        # Default symbols if none specified
+        symbols = [symbol] if symbol else ["BTCUSDT", "ETHUSDT", "ADAUSDT"]
+        all_signals = []
+        
+        for sym in symbols:
+            try:
+                request = SignalRequest(symbol=sym, timeframe="1h", min_confidence=70.0)
+                signals = await generate_trading_signals(request)
+                all_signals.extend(signals)
+            except Exception as e:
+                print(f"Failed to get signals for {sym}: {e}")
+                continue
+        
+        # Sort by confidence and return limited results
+        all_signals.sort(key=lambda x: x.confidence, reverse=True)
+        return all_signals[:limit]
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get current signals: {str(e)}")
+
 @router.get("/active/{symbol}")
 async def get_active_signals(
     symbol: str,
