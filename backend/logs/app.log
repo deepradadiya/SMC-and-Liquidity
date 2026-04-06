@@ -40990,3 +40990,302 @@
 [2026-04-06 16:30:37] [INFO] [app.main] WebSocket disconnected. Total connections: 1
 [2026-04-06 16:30:37] [INFO] [app.main] WebSocket disconnected. Total connections: 0
 [2026-04-06 16:30:37] [INFO] [app.main] Broadcasted market data for 2 symbols to 0 connections
+[2026-04-06 16:31:24] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:31:24] [INFO] [app.main] Response: 404 for POST /predict in 0.007s
+[2026-04-06 16:32:34] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:32:34] [INFO] [app.main] Response: 404 for POST /predict in 0.008s
+[2026-04-06 16:32:50] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:32:50] [INFO] [app.main] Response: 404 for POST /predict in 0.001s
+[2026-04-06 16:32:57] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:32:57] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:32:57] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:32:57] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:32:57] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:32:57] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:32:57] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:32:57] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:33:04] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:33:04] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:33:04] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:33:04] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:33:04] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:33:04] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:33:04] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:33:04] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:33:33] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:33:33] [INFO] [app.main] Response: 404 for POST /predict in 0.002s
+[2026-04-06 16:33:34] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:33:34] [INFO] [app.main] Response: 404 for POST /predict in 0.002s
+[2026-04-06 16:33:40] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:33:40] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:33:40] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:33:40] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:33:40] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:33:40] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:33:40] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:33:40] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:34:02] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:34:02] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:34:02] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:34:02] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:34:02] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:34:02] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:34:02] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:34:02] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:34:08] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:34:08] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:34:08] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:34:08] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:34:08] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:34:08] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:34:08] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:34:08] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:35:08] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:35:08] [INFO] [app.main] Generated prediction: BUY with 81.6% confidence
+[2026-04-06 16:35:08] [INFO] [app.main] Response: 200 for POST /predict in 0.008s
+[2026-04-06 16:41:54] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:41:54] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:41:55] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:41:55] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:41:55] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:41:55] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:41:55] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:41:55] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:41:59] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:41:59] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:41:59] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:41:59] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:41:59] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:41:59] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:41:59] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:41:59] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:46:39] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:46:39] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:46:39] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:46:39] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:46:39] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:46:39] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:46:39] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:46:39] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:47:09] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:47:09] [INFO] [app.main] Generated prediction: SELL with 66.4% confidence
+[2026-04-06 16:47:09] [INFO] [app.main] Response: 200 for POST /predict in 0.005s
+[2026-04-06 16:47:38] [INFO] [app.main] WebSocket connected. Total connections: 1
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Fetching BTCUSDT 1m data, trying sources: ['binance', 'coinmarketcap', 'finnhub', 'mock']
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Trying binance for BTCUSDT 1m
+[2026-04-06 16:47:38] [INFO] [app.services.data_manager] Binance fetch: BTCUSDT 1m, limit=100 (recent data)
+[2026-04-06 16:47:40] [INFO] [app.services.data_manager] Fetching BTCUSDT 1m data, trying sources: ['binance', 'coinmarketcap', 'finnhub', 'mock']
+[2026-04-06 16:47:40] [INFO] [app.services.data_manager] Trying binance for BTCUSDT 1m
+[2026-04-06 16:47:40] [INFO] [app.services.data_manager] Binance fetch: BTCUSDT 1m, limit=100 (recent data)
+[2026-04-06 16:47:41] [INFO] [app.services.data_manager] Binance raw response: 100 candles
+[2026-04-06 16:47:41] [INFO] [app.services.data_manager] Binance DataFrame created: 100 rows, date range: 2026-04-06 09:38:00 to 2026-04-06 11:17:00
+[2026-04-06 16:47:41] [INFO] [app.services.data_manager] Returning 50 recent candles
+[2026-04-06 16:47:41] [INFO] [app.services.data_manager] ✅ Successfully fetched 50 candles from binance
+[2026-04-06 16:47:41] [INFO] [app.services.data_manager] Retrieved 50 candles for BTCUSDT 1m
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Binance raw response: 100 candles
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Binance DataFrame created: 100 rows, date range: 2026-04-06 09:38:00 to 2026-04-06 11:17:00
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Returning 50 recent candles
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] ✅ Successfully fetched 50 candles from binance
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Retrieved 50 candles for BTCUSDT 1m
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Fetching ETHUSDT 1m data, trying sources: ['binance', 'coinmarketcap', 'finnhub', 'mock']
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Trying binance for ETHUSDT 1m
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Binance fetch: ETHUSDT 1m, limit=100 (recent data)
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Binance raw response: 100 candles
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Binance DataFrame created: 100 rows, date range: 2026-04-06 09:38:00 to 2026-04-06 11:17:00
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Returning 50 recent candles
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] ✅ Successfully fetched 50 candles from binance
+[2026-04-06 16:47:43] [INFO] [app.services.data_manager] Retrieved 50 candles for ETHUSDT 1m
+[2026-04-06 16:47:43] [INFO] [app.main] Broadcasted market data for 2 symbols to 1 connections
+[2026-04-06 16:47:46] [INFO] [app.main] Broadcasted market data for 2 symbols to 1 connections
+[2026-04-06 16:47:46] [ERROR] [app.main] Error processing WebSocket message: (1000, '')
+[2026-04-06 16:47:49] [INFO] [app.main] WebSocket disconnected. Total connections: 0
+[2026-04-06 16:47:49] [INFO] [app.main] Broadcasted market data for 2 symbols to 0 connections
+[2026-04-06 16:48:48] [INFO] [app.main] Request: OPTIONS /predict from 127.0.0.1
+[2026-04-06 16:48:48] [INFO] [app.main] Response: 200 for OPTIONS /predict in 0.005s
+[2026-04-06 16:48:48] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:48:48] [INFO] [app.main] Generated prediction: SELL with 83.2% confidence
+[2026-04-06 16:48:48] [INFO] [app.main] Response: 200 for POST /predict in 0.004s
+[2026-04-06 16:48:58] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 16:48:58] [INFO] [app.main] Generated prediction: BUY with 66.6% confidence
+[2026-04-06 16:48:58] [INFO] [app.main] Response: 200 for POST /predict in 0.004s
+[2026-04-06 16:52:41] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:52:41] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:52:41] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:52:41] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:52:41] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:52:41] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:52:41] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:52:41] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:53:24] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:53:24] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:53:24] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:53:24] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:53:24] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:53:24] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:53:24] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:53:24] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:53:28] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:53:28] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:53:28] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:53:28] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:53:28] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:53:28] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:53:28] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:53:28] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:54:01] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:54:01] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:54:01] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:54:01] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:54:01] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:54:01] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:54:01] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:54:01] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:54:07] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:54:07] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:54:07] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:54:07] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:54:07] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:54:07] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:54:07] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:54:07] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:54:17] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-06 16:54:17] [INFO] [app.main] Starting SMC Trading System...
+[2026-04-06 16:54:17] [INFO] [app.services.data_manager] Binance API initialized
+[2026-04-06 16:54:17] [INFO] [app.services.data_manager] Finnhub API initialized
+[2026-04-06 16:54:17] [INFO] [app.services.data_manager] CoinMarketCap API initialized
+[2026-04-06 16:54:17] [INFO] [app.services.data_manager] Mock data source initialized
+[2026-04-06 16:54:17] [INFO] [app.services.data_manager] Data quality database initialized
+[2026-04-06 16:54:17] [INFO] [app.services.data_manager] Enhanced Data Manager initialized
+[2026-04-06 16:56:04] [INFO] [app.main] Request: GET /api/historical/timeframes from 127.0.0.1
+[2026-04-06 16:56:04] [INFO] [app.routes.historical_data] Returned 15 supported timeframes
+[2026-04-06 16:56:04] [INFO] [app.main] Response: 200 for GET /api/historical/timeframes in 0.005s
+[2026-04-06 16:56:04] [INFO] [app.main] Request: GET /api/historical/fetch/BTCUSDT/1h from 127.0.0.1
+[2026-04-06 16:56:04] [INFO] [app.routes.historical_data] Fetching BTCUSDT 1h historical data
+[2026-04-06 16:56:04] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 1h
+[2026-04-06 16:56:04] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 1h from 2021-05-02 16:56:04.557639 to 2026-04-06 16:56:04.557639
+[2026-04-06 16:56:20] [INFO] [app.services.historical_data_manager] Reached maximum historical date for BTCUSDT 1h
+[2026-04-06 16:56:20] [INFO] [app.services.historical_data_manager] Successfully fetched 44000 candles for BTCUSDT 1h
+[2026-04-06 16:56:21] [INFO] [app.services.historical_data_manager] Cached 44000 candles for BTCUSDT 1h
+[2026-04-06 16:56:21] [INFO] [app.routes.historical_data] Successfully fetched 44000 candles for BTCUSDT 1h
+[2026-04-06 16:56:21] [INFO] [app.main] Response: 200 for GET /api/historical/fetch/BTCUSDT/1h in 17.343s
+[2026-04-06 16:56:21] [INFO] [app.main] Request: GET /api/historical/fetch/BTCUSDT from 127.0.0.1
+[2026-04-06 16:56:21] [INFO] [app.routes.historical_data] Fetching historical data for BTCUSDT, timeframes: ['1m', '5m', '15m', '1h', '4h', '1d']
+[2026-04-06 16:56:21] [INFO] [app.services.historical_data_manager] Starting historical data fetch for BTCUSDT - 6 timeframes
+[2026-04-06 16:56:21] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 1m
+[2026-04-06 16:56:21] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 1m from 2026-03-07 16:56:21.937476 to 2026-04-06 16:56:21.937476
+[2026-04-06 16:56:37] [INFO] [app.services.historical_data_manager] Reached maximum historical date for BTCUSDT 1m
+[2026-04-06 16:56:37] [INFO] [app.services.historical_data_manager] Successfully fetched 44000 candles for BTCUSDT 1m
+[2026-04-06 16:56:38] [INFO] [app.services.historical_data_manager] Cached 44000 candles for BTCUSDT 1m
+[2026-04-06 16:56:38] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 1m: 44000 candles fetched
+[2026-04-06 16:56:38] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 5m
+[2026-04-06 16:56:38] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 5m from 2025-11-07 16:56:38.108532 to 2026-04-06 16:56:38.108532
+[2026-04-06 16:56:52] [INFO] [app.services.historical_data_manager] Reached maximum historical date for BTCUSDT 5m
+[2026-04-06 16:56:52] [INFO] [app.services.historical_data_manager] Successfully fetched 44000 candles for BTCUSDT 5m
+[2026-04-06 16:56:52] [INFO] [app.services.historical_data_manager] Cached 44000 candles for BTCUSDT 5m
+[2026-04-06 16:56:52] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 5m: 44000 candles fetched
+[2026-04-06 16:56:52] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 15m
+[2026-04-06 16:56:52] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 15m from 2025-01-11 16:56:52.828763 to 2026-04-06 16:56:52.828763
+[2026-04-06 16:57:07] [INFO] [app.services.historical_data_manager] Reached maximum historical date for BTCUSDT 15m
+[2026-04-06 16:57:07] [INFO] [app.services.historical_data_manager] Successfully fetched 44000 candles for BTCUSDT 15m
+[2026-04-06 16:57:08] [INFO] [app.services.historical_data_manager] Cached 44000 candles for BTCUSDT 15m
+[2026-04-06 16:57:08] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 15m: 44000 candles fetched
+[2026-04-06 16:57:08] [INFO] [app.services.historical_data_manager] Using cached data for BTCUSDT 1h: 44000 candles
+[2026-04-06 16:57:08] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 1h: 44000 candles fetched
+[2026-04-06 16:57:08] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 4h
+[2026-04-06 16:57:08] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 4h from 2006-07-20 16:57:08.551522 to 2026-04-06 16:57:08.551522
+[2026-04-06 16:57:15] [INFO] [app.services.historical_data_manager] No more data available for BTCUSDT 4h
+[2026-04-06 16:57:15] [INFO] [app.services.historical_data_manager] Successfully fetched 18910 candles for BTCUSDT 4h
+[2026-04-06 16:57:16] [INFO] [app.services.historical_data_manager] Cached 18910 candles for BTCUSDT 4h
+[2026-04-06 16:57:16] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 4h: 18910 candles fetched
+[2026-04-06 16:57:16] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 1d
+[2026-04-06 16:57:16] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 1d from 1026-12-05 16:57:16.215208 to 2026-04-06 16:57:16.215208
+[2026-04-06 16:57:17] [INFO] [app.services.historical_data_manager] No more data available for BTCUSDT 1d
+[2026-04-06 16:57:17] [INFO] [app.services.historical_data_manager] Successfully fetched 3155 candles for BTCUSDT 1d
+[2026-04-06 16:57:17] [INFO] [app.services.historical_data_manager] Cached 3155 candles for BTCUSDT 1d
+[2026-04-06 16:57:17] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 1d: 3155 candles fetched
+[2026-04-06 16:57:19] [INFO] [app.routes.historical_data] Successfully fetched historical data for BTCUSDT: 6 datasets in 58.00s
+[2026-04-06 16:57:20] [INFO] [app.main] Response: 200 for GET /api/historical/fetch/BTCUSDT in 58.083s
+[2026-04-06 16:57:20] [INFO] [app.main] Request: GET /api/historical/summary from 127.0.0.1
+[2026-04-06 16:57:20] [INFO] [app.routes.historical_data] Data summary: 6 datasets
+[2026-04-06 16:57:20] [INFO] [app.main] Response: 200 for GET /api/historical/summary in 0.001s
+[2026-04-06 16:57:20] [INFO] [app.main] Request: GET /api/historical/health from 127.0.0.1
+[2026-04-06 16:57:20] [INFO] [app.main] Response: 200 for GET /api/historical/health in 0.000s
+[2026-04-06 16:57:20] [INFO] [app.main] Request: GET /api/historical/fetch/BTCUSDT from 127.0.0.1
+[2026-04-06 16:57:20] [INFO] [app.routes.historical_data] Fetching historical data for BTCUSDT, timeframes: ['1h', '4h', '1d']
+[2026-04-06 16:57:20] [INFO] [app.services.historical_data_manager] Starting historical data fetch for BTCUSDT - 3 timeframes
+[2026-04-06 16:57:20] [INFO] [app.services.historical_data_manager] Using cached data for BTCUSDT 1h: 44000 candles
+[2026-04-06 16:57:20] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 1h: 44000 candles fetched
+[2026-04-06 16:57:20] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 4h
+[2026-04-06 16:57:20] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 4h from 2006-07-20 16:57:20.308483 to 2026-04-06 16:57:20.308483
+[2026-04-06 16:57:27] [INFO] [app.services.historical_data_manager] No more data available for BTCUSDT 4h
+[2026-04-06 16:57:27] [INFO] [app.services.historical_data_manager] Successfully fetched 18910 candles for BTCUSDT 4h
+[2026-04-06 16:57:27] [INFO] [app.services.historical_data_manager] Cached 18910 candles for BTCUSDT 4h
+[2026-04-06 16:57:27] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 4h: 18910 candles fetched
+[2026-04-06 16:57:27] [INFO] [app.services.historical_data_manager] Fetching fresh data for BTCUSDT 1d
+[2026-04-06 16:57:27] [INFO] [app.services.historical_data_manager] Fetching BTCUSDT 1d from 1026-12-05 16:57:27.404412 to 2026-04-06 16:57:27.404412
+[2026-04-06 16:57:28] [INFO] [app.services.historical_data_manager] No more data available for BTCUSDT 1d
+[2026-04-06 16:57:28] [INFO] [app.services.historical_data_manager] Successfully fetched 3155 candles for BTCUSDT 1d
+[2026-04-06 16:57:28] [INFO] [app.services.historical_data_manager] Cached 3155 candles for BTCUSDT 1d
+[2026-04-06 16:57:28] [INFO] [app.services.historical_data_manager] ✅ BTCUSDT 1d: 3155 candles fetched
+[2026-04-06 16:57:29] [INFO] [app.routes.historical_data] Successfully fetched historical data for BTCUSDT: 3 datasets in 9.47s
+[2026-04-06 16:57:29] [INFO] [app.main] Response: 200 for GET /api/historical/fetch/BTCUSDT in 9.497s
+[2026-04-06 16:57:29] [INFO] [app.main] Request: GET /api/historical/fetch/ETHUSDT from 127.0.0.1
+[2026-04-06 16:57:29] [INFO] [app.routes.historical_data] Fetching historical data for ETHUSDT, timeframes: ['1h', '4h', '1d']
+[2026-04-06 16:57:29] [INFO] [app.services.historical_data_manager] Starting historical data fetch for ETHUSDT - 3 timeframes
+[2026-04-06 16:57:29] [INFO] [app.services.historical_data_manager] Fetching fresh data for ETHUSDT 1h
+[2026-04-06 16:57:29] [INFO] [app.services.historical_data_manager] Fetching ETHUSDT 1h from 2021-05-02 16:57:29.762602 to 2026-04-06 16:57:29.762602
+[2026-04-06 16:57:43] [INFO] [app.services.historical_data_manager] Reached maximum historical date for ETHUSDT 1h
+[2026-04-06 16:57:43] [INFO] [app.services.historical_data_manager] Successfully fetched 44000 candles for ETHUSDT 1h
+[2026-04-06 16:57:44] [INFO] [app.services.historical_data_manager] Cached 44000 candles for ETHUSDT 1h
+[2026-04-06 16:57:44] [INFO] [app.services.historical_data_manager] ✅ ETHUSDT 1h: 44000 candles fetched
+[2026-04-06 16:57:44] [INFO] [app.services.historical_data_manager] Fetching fresh data for ETHUSDT 4h
+[2026-04-06 16:57:44] [INFO] [app.services.historical_data_manager] Fetching ETHUSDT 4h from 2006-07-20 16:57:44.244879 to 2026-04-06 16:57:44.244879
+[2026-04-06 16:57:50] [INFO] [app.services.historical_data_manager] No more data available for ETHUSDT 4h
+[2026-04-06 16:57:50] [INFO] [app.services.historical_data_manager] Successfully fetched 18910 candles for ETHUSDT 4h
+[2026-04-06 16:57:50] [INFO] [app.services.historical_data_manager] Cached 18910 candles for ETHUSDT 4h
+[2026-04-06 16:57:50] [INFO] [app.services.historical_data_manager] ✅ ETHUSDT 4h: 18910 candles fetched
+[2026-04-06 16:57:50] [INFO] [app.services.historical_data_manager] Fetching fresh data for ETHUSDT 1d
+[2026-04-06 16:57:50] [INFO] [app.services.historical_data_manager] Fetching ETHUSDT 1d from 1026-12-05 16:57:50.962671 to 2026-04-06 16:57:50.962671
+[2026-04-06 16:57:52] [INFO] [app.services.historical_data_manager] No more data available for ETHUSDT 1d
+[2026-04-06 16:57:52] [INFO] [app.services.historical_data_manager] Successfully fetched 3155 candles for ETHUSDT 1d
+[2026-04-06 16:57:52] [INFO] [app.services.historical_data_manager] Cached 3155 candles for ETHUSDT 1d
+[2026-04-06 16:57:52] [INFO] [app.services.historical_data_manager] ✅ ETHUSDT 1d: 3155 candles fetched
+[2026-04-06 16:57:53] [INFO] [app.routes.historical_data] Successfully fetched historical data for ETHUSDT: 3 datasets in 23.35s
+[2026-04-06 16:57:53] [INFO] [app.main] Response: 200 for GET /api/historical/fetch/ETHUSDT in 23.378s
+[2026-04-06 16:57:53] [INFO] [app.main] Request: GET /api/historical/fetch/ADAUSDT from 127.0.0.1
+[2026-04-06 16:57:53] [INFO] [app.routes.historical_data] Fetching historical data for ADAUSDT, timeframes: ['1h', '4h', '1d']
+[2026-04-06 16:57:53] [INFO] [app.services.historical_data_manager] Starting historical data fetch for ADAUSDT - 3 timeframes
+[2026-04-06 16:57:53] [INFO] [app.services.historical_data_manager] Fetching fresh data for ADAUSDT 1h
+[2026-04-06 16:57:53] [INFO] [app.services.historical_data_manager] Fetching ADAUSDT 1h from 2021-05-02 16:57:53.196262 to 2026-04-06 16:57:53.196262
+[2026-04-06 16:58:10] [INFO] [app.services.historical_data_manager] Reached maximum historical date for ADAUSDT 1h
+[2026-04-06 16:58:10] [INFO] [app.services.historical_data_manager] Successfully fetched 44000 candles for ADAUSDT 1h
+[2026-04-06 16:58:10] [INFO] [app.services.historical_data_manager] Cached 44000 candles for ADAUSDT 1h
+[2026-04-06 16:58:10] [INFO] [app.services.historical_data_manager] ✅ ADAUSDT 1h: 44000 candles fetched
+[2026-04-06 16:58:10] [INFO] [app.services.historical_data_manager] Fetching fresh data for ADAUSDT 4h
+[2026-04-06 16:58:10] [INFO] [app.services.historical_data_manager] Fetching ADAUSDT 4h from 2006-07-20 16:58:10.622297 to 2026-04-06 16:58:10.622297
+[2026-04-06 16:58:16] [INFO] [app.services.historical_data_manager] No more data available for ADAUSDT 4h
+[2026-04-06 16:58:16] [INFO] [app.services.historical_data_manager] Successfully fetched 17459 candles for ADAUSDT 4h
+[2026-04-06 16:58:16] [INFO] [app.services.historical_data_manager] Cached 17459 candles for ADAUSDT 4h
+[2026-04-06 16:58:16] [INFO] [app.services.historical_data_manager] ✅ ADAUSDT 4h: 17459 candles fetched
+[2026-04-06 16:58:16] [INFO] [app.services.historical_data_manager] Fetching fresh data for ADAUSDT 1d
+[2026-04-06 16:58:16] [INFO] [app.services.historical_data_manager] Fetching ADAUSDT 1d from 1026-12-05 16:58:16.524271 to 2026-04-06 16:58:16.524271
+[2026-04-06 16:58:17] [INFO] [app.services.historical_data_manager] No more data available for ADAUSDT 1d
+[2026-04-06 16:58:17] [INFO] [app.services.historical_data_manager] Successfully fetched 2912 candles for ADAUSDT 1d
+[2026-04-06 16:58:17] [INFO] [app.services.historical_data_manager] Cached 2912 candles for ADAUSDT 1d
+[2026-04-06 16:58:17] [INFO] [app.services.historical_data_manager] ✅ ADAUSDT 1d: 2912 candles fetched
+[2026-04-06 16:58:18] [INFO] [app.routes.historical_data] Successfully fetched historical data for ADAUSDT: 3 datasets in 25.19s
+[2026-04-06 16:58:18] [INFO] [app.main] Response: 200 for GET /api/historical/fetch/ADAUSDT in 25.215s
+[2026-04-06 17:00:09] [INFO] [app.main] Request: OPTIONS /predict from 127.0.0.1
+[2026-04-06 17:00:09] [INFO] [app.main] Response: 200 for OPTIONS /predict in 0.002s
+[2026-04-06 17:00:09] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 17:00:09] [INFO] [app.main] Generated prediction: HOLD with 66.2% confidence
+[2026-04-06 17:00:09] [INFO] [app.main] Response: 200 for POST /predict in 0.013s
+[2026-04-06 17:00:26] [INFO] [app.main] Request: POST /predict from 127.0.0.1
+[2026-04-06 17:00:26] [INFO] [app.main] Generated prediction: SELL with 86.1% confidence
+[2026-04-06 17:00:26] [INFO] [app.main] Response: 200 for POST /predict in 0.004s
