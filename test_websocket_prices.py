@@ -1,53 +1,78 @@
 #!/usr/bin/env python3
 """
-Test WebSocket Price Data
-Check what prices are actually being broadcast
+Test WebSocket price updates to ensure they're reasonable
 """
 
 import asyncio
 import websockets
 import json
+from datetime import datetime
 
-async def listen_to_prices():
-    """Listen to WebSocket and show actual price data"""
+async def test_websocket():
+    """Test WebSocket price updates"""
+    print("🔌 Testing WebSocket price updates...")
+    
     uri = "ws://localhost:8000/ws"
     
     try:
         async with websockets.connect(uri) as websocket:
-            print("🔌 Connected to WebSocket")
-            print("📡 Listening for price updates...\n")
+            print("✅ WebSocket connected")
             
-            message_count = 0
-            while message_count < 3:  # Listen for 3 messages
+            # Listen for a few price updates
+            prices = {}
+            update_count = 0
+            
+            async for message in websocket:
                 try:
-                    message = await asyncio.wait_for(websocket.recv(), timeout=20.0)
                     data = json.loads(message)
                     
-                    print(f"📨 Message {message_count + 1}: {data.get('type', 'Unknown')}")
-                    
-                    if data.get('type') == 'price_update':
-                        price_data = data.get('data', {})
-                        print(f"   Source: {data.get('source', 'Unknown')}")
-                        print(f"   Timestamp: {data.get('timestamp', 'Unknown')}")
+                    if data.get("type") == "price_update":
+                        update_count += 1
+                        price_data = data.get("data", {})
                         
-                        if price_data:
-                            for symbol, info in price_data.items():
-                                price = info.get('price', 'Unknown')
-                                change = info.get('change', 0)
-                                volume = info.get('volume', 'Unknown')
-                                print(f"   💰 {symbol}: ${price} ({change:+.2f}%) Vol: {volume}")
-                        else:
-                            print("   ⚠️ No price data in message")
-                    
-                    print()
-                    message_count += 1
-                    
-                except asyncio.TimeoutError:
-                    print("⏰ Timeout waiting for message")
-                    break
-                    
+                        for symbol, info in price_data.items():
+                            current_price = info.get("price")
+                            if current_price:
+                                if symbol in prices:
+                                    # Check price change
+                                    prev_price = prices[symbol]
+                                    change = abs(current_price - prev_price) / prev_price
+                                    print(f"📊 {symbol}: ${current_price:,.2f} (change: {change:.2%})")
+                                    
+                                    if change > 0.05:  # 5% change
+                                        print(f"⚠️  WARNING: Large price jump for {symbol}!")
+                                else:
+                                    print(f"💰 {symbol}: ${current_price:,.2f} (initial)")
+                                
+                                prices[symbol] = current_price
+                        
+                        if update_count >= 5:  # Test 5 updates
+                            break
+                            
+                except json.JSONDecodeError:
+                    print(f"❌ Invalid JSON: {message}")
+                except Exception as e:
+                    print(f"❌ Error processing message: {e}")
+            
+            print(f"✅ Received {update_count} price updates")
+            return True
+            
     except Exception as e:
-        print(f"❌ WebSocket Error: {e}")
+        print(f"❌ WebSocket error: {e}")
+        return False
+
+def main():
+    print("🧪 Testing WebSocket Price Updates")
+    print("=" * 40)
+    
+    try:
+        success = asyncio.run(test_websocket())
+        if success:
+            print("\n✅ WebSocket price updates look good!")
+        else:
+            print("\n❌ WebSocket issues detected")
+    except KeyboardInterrupt:
+        print("\n⏹️  Test interrupted")
 
 if __name__ == "__main__":
-    asyncio.run(listen_to_prices())
+    main()
