@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test MTF API Connection</title>
+</head>
+<body>
+    <h1>MTF API Connection Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testMTFAPI() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Test MTF analysis endpoint
+                console.log('Testing MTF analysis...');
+                const response = await fetch('http://localhost:8000/api/mtf/mtf-analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        symbol: 'BTCUSDT',
+                        entry_tf: '5m',
+                        htf: '4h',
+                        mtf: '1h'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                results.innerHTML = `
+                    <h2>✅ MTF API Connection Successful!</h2>
+                    <p><strong>Current BTC Price (Entry):</strong> $${data.entry}</p>
+                    <p><strong>Confluence Score:</strong> ${data.confluence_score}/100</p>
+                    <p><strong>Bias:</strong> ${data.bias}</p>
+                    <p><strong>Signal Valid:</strong> ${data.signal_valid}</p>
+                    <p><strong>Stop Loss:</strong> $${data.sl}</p>
+                    <p><strong>Take Profit:</strong> $${data.tp}</p>
+                    <h3>Confluence Reasons:</h3>
+                    <ul>
+                        ${data.reasons.map(reason => `<li>${reason}</li>`).join('')}
+                    </ul>
+                    <h3>Raw Response:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('MTF API Test Error:', error);
+                results.innerHTML = `
+                    <h2>❌ MTF API Connection Failed</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p>Make sure the backend server is running on http://localhost:8000</p>
+                `;
+            }
+        }
+        
+        // Run test when page loads
+        testMTFAPI();
+    </script>
+</body>
+</html>
+</pre>

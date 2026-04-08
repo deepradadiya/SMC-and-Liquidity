@@ -500,3 +500,4 @@
 [2026-04-05 04:44:14] [INFO] [app.services.alert_manager] Alert database initialized
 [2026-04-05 04:44:14] [INFO] [app.services.alert_manager] Alert Manager initialized with multi-channel support
 [2026-04-05 04:44:14] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log
+[2026-04-07 06:06:59] [INFO] [app.utils.logger] Logging system initialized - Level: INFO, File: logs/app.log

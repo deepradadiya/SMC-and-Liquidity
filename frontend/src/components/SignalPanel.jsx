@@ -1,11 +1,60 @@
-import React from 'react';
-import { useSignalStore } from '../stores';
-import { mockActiveSignal, mockMTFBias, mockMarketRegime, mockQuickStats, mockRiskMeter } from '../data/mockData';
+import React, { useEffect } from 'react';
+import { useSignalStore, useChartStore } from '../stores';
+import { useMTFConfluence } from '../hooks/useMTFConfluence';
+import { mockMarketRegime, mockQuickStats, mockRiskMeter } from '../data/mockData';
 import { Copy, CheckCircle, X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 const SignalPanel = () => {
-  const { activeSignal, scanning } = useSignalStore();
-  const signal = activeSignal || mockActiveSignal;
+  const { activeSignal, setActiveSignal, scanning } = useSignalStore();
+  const { symbol, timeframe, htf } = useChartStore();
+  
+  // Get real MTF data
+  const {
+    mtfData,
+    loading,
+    confluenceScore,
+    bias,
+    signalValid,
+    entry,
+    stopLoss,
+    takeProfit,
+    reasons,
+    mtfBias
+  } = useMTFConfluence(symbol, {
+    ltf: timeframe,
+    htf: htf,
+    mtf: "1h"
+  });
+
+  // Update signal store when real MTF data arrives
+  useEffect(() => {
+    if (mtfData && signalValid) {
+      const realSignal = {
+        id: `mtf_${Date.now()}`,
+        symbol: symbol,
+        type: bias === 'bullish' ? 'BUY' : bias === 'bearish' ? 'SELL' : 'NONE',
+        timeframe: timeframe?.toUpperCase() || '15M',
+        session: 'Live Analysis',
+        timestamp: Date.now(),
+        confluence_score: confluenceScore,
+        entry: entry,
+        stop_loss: stopLoss,
+        take_profit: takeProfit,
+        risk_reward: entry && stopLoss && takeProfit ? 
+          Math.abs(takeProfit - entry) / Math.abs(entry - stopLoss) : 2.0,
+        ml_confidence: 75,
+        risk_amount: 215,
+        risk_percent: 1,
+        position_size: 0.005,
+        reasons: reasons || []
+      };
+      
+      setActiveSignal(realSignal);
+    }
+  }, [mtfData, signalValid, symbol, bias, entry, stopLoss, takeProfit, confluenceScore, reasons, setActiveSignal, timeframe]);
+
+  // Use real signal if available, otherwise show scanning
+  const signal = activeSignal;
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -134,34 +183,43 @@ const SignalPanel = () => {
       ) : (
         <div data-testid="scanning-state" className="m-3 p-8 text-center rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
           <div className="w-16 h-16 border-4 border-[var(--accent-blue)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>SCANNING MARKET...</div>
-          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Last scan: 2 minutes ago</div>
+          <div className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+            {loading ? 'ANALYZING MTF CONFLUENCE...' : 'SCANNING MARKET...'}
+          </div>
+          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            {loading ? `${symbol} • ${timeframe} / ${htf}` : 'Last scan: 2 minutes ago'}
+          </div>
         </div>
       )}
 
-      {/* MTF Bias */}
+      {/* MTF Bias - Real Data */}
       <div className="mx-3 mb-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
         <div className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>MTF BIAS</div>
         <div className="space-y-2">
-          {mockMTFBias.map((bias) => (
-            <div key={bias.timeframe}>
+          {(mtfBias && mtfBias.length > 0 ? mtfBias : [
+            { timeframe: '4H', bias: 'LOADING', strength: 0, direction: 'neutral' },
+            { timeframe: '1H', bias: 'LOADING', strength: 0, direction: 'neutral' },
+            { timeframe: '15M', bias: 'LOADING', strength: 0, direction: 'neutral' },
+            { timeframe: '5M', bias: 'LOADING', strength: 0, direction: 'neutral' }
+          ]).map((biasData) => (
+            <div key={biasData.timeframe}>
               <div className="flex items-center justify-between mb-1 text-xs">
-                <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{bias.timeframe}</span>
+                <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{biasData.timeframe}</span>
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold" style={{ color: bias.direction === 'up' ? 'var(--accent-green)' : bias.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)' }}>
-                    {bias.bias}
+                  <span className="font-semibold" style={{ color: biasData.direction === 'up' ? 'var(--accent-green)' : biasData.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)' }}>
+                    {biasData.bias}
                   </span>
-                  {bias.direction === 'up' && <TrendingUp className="w-3 h-3" style={{ color: 'var(--accent-green)' }} />}
-                  {bias.direction === 'down' && <TrendingDown className="w-3 h-3" style={{ color: 'var(--accent-red)' }} />}
-                  {bias.direction === 'neutral' && <Minus className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />}
+                  {biasData.direction === 'up' && <TrendingUp className="w-3 h-3" style={{ color: 'var(--accent-green)' }} />}
+                  {biasData.direction === 'down' && <TrendingDown className="w-3 h-3" style={{ color: 'var(--accent-red)' }} />}
+                  {biasData.direction === 'neutral' && <Minus className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />}
                 </div>
               </div>
               <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
                 <div
-                  className="h-full rounded-full"
+                  className="h-full rounded-full transition-all duration-500"
                   style={{
-                    width: `${bias.strength}%`,
-                    backgroundColor: bias.direction === 'up' ? 'var(--accent-green)' : bias.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)'
+                    width: `${biasData.strength}%`,
+                    backgroundColor: biasData.direction === 'up' ? 'var(--accent-green)' : biasData.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)'
                   }}
                 ></div>
               </div>

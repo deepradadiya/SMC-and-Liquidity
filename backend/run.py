@@ -23,7 +23,7 @@ if __name__ == "__main__":
     print(f"🔧 Debug mode: {debug}")
     
     uvicorn.run(
-        "app.main_simple:app",
+        "app.main:app",  # Use main.py instead of main_simple.py
         host=host,
         port=port,
         reload=debug,

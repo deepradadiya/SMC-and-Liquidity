@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Settings, Play, Square, BarChart3, Clock, Moon, Sun, Maximize2 } from 'lucide-react'
-import { useChartStore } from '../stores/chartStore'
-import { useSignalStore } from '../stores/signalStore'
-import { useRiskStore } from '../stores/riskStore'
-import { useAlertStore } from '../stores/alertStore'
+import { useChartStore, useSignalStore, useRiskStore, useAlertStore } from '../stores'
 import TradingChart from '../components/TradingChart'
-import SignalPanel from '../components/SignalPanel'
+import MTFSignalPanel from '../components/MTFSignalPanel'
 import PerformancePanel from '../components/PerformancePanel'
 import Watchlist from '../components/Watchlist'
 import NotificationCenter from '../components/NotificationCenter'
@@ -19,56 +16,27 @@ const Dashboard = () => {
   const [isRiskModalOpen, setIsRiskModalOpen] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isLive, setIsLive] = useState(false)
+  const [darkMode, setDarkMode] = useState(true)
 
   const { 
     symbol, 
     timeframe, 
-    htfTimeframe, 
-    isLive, 
-    darkMode, 
+    htf, 
+    overlays,
     setSymbol, 
     setTimeframe, 
-    setHTFTimeframe, 
-    setIsLive, 
-    setDarkMode 
+    setHTF, 
+    toggleOverlay 
   } = useChartStore()
 
   const { activeSignal, setActiveSignal } = useSignalStore()
-  const { accountBalance, dailyPnL, riskLevel } = useRiskStore()
+  const { balance, todayPnL, currentRisk } = useRiskStore()
   const { addAlert } = useAlertStore()
 
-  // Mock data for demo
-  useEffect(() => {
-    // Simulate receiving a signal after 3 seconds
-    const timer = setTimeout(() => {
-      const mockSignal = {
-        id: Date.now(),
-        symbol: 'BTCUSDT',
-        direction: 'BUY',
-        entry_price: 45250,
-        stop_loss: 44800,
-        take_profit: 46150,
-        confluence_score: 85,
-        ml_probability: 0.73,
-        session: 'london',
-        timeframes: ['4h', '1h', '15m'],
-        timestamp: new Date().toISOString(),
-        type: 'Order Block + FVG'
-      }
-      
-      setActiveSignal(mockSignal)
-      
-      addAlert({
-        type: 'signal',
-        message: `New ${mockSignal.direction} signal for ${mockSignal.symbol}`,
-        data: mockSignal
-      })
-      
-      toast.success('New signal generated!')
-    }, 3000)
-
-    return () => clearTimeout(timer)
-  }, [])
+  // Real-time signal updates - removed mock data
+  // The MTFSignalPanel component now handles real MTF confluence data
+  // No need for mock signal generation here
 
   const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d']
   const htfTimeframes = ['1h', '4h', '1d', '1w']
@@ -172,18 +140,18 @@ const Dashboard = () => {
           <div className="flex items-center space-x-6">
             <div className="text-center">
               <div className="text-xs text-dark-muted">Balance</div>
-              <div className="font-semibold">{formatCurrency(accountBalance)}</div>
+              <div className="font-semibold">{formatCurrency(balance)}</div>
             </div>
             <div className="text-center">
               <div className="text-xs text-dark-muted">P&L</div>
-              <div className={`font-semibold ${dailyPnL >= 0 ? 'text-bull' : 'text-bear'}`}>
-                {dailyPnL >= 0 ? '+' : ''}{formatCurrency(dailyPnL)}
+              <div className={`font-semibold ${todayPnL >= 0 ? 'text-bull' : 'text-bear'}`}>
+                {todayPnL >= 0 ? '+' : ''}{formatCurrency(todayPnL)}
               </div>
             </div>
             <div className="text-center">
               <div className="text-xs text-dark-muted">Risk</div>
-              <div className={`font-semibold ${getRiskLevelColor(riskLevel)}`}>
-                {riskLevel}
+              <div className={`font-semibold ${getRiskLevelColor(currentRisk < 30 ? 'LOW' : currentRisk < 60 ? 'MEDIUM' : currentRisk < 80 ? 'HIGH' : 'CRITICAL')}`}>
+                {currentRisk < 30 ? 'LOW' : currentRisk < 60 ? 'MEDIUM' : currentRisk < 80 ? 'HIGH' : 'CRITICAL'}
               </div>
             </div>
           </div>
@@ -231,8 +199,8 @@ const Dashboard = () => {
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-dark-muted">HTF:</span>
                   <select
-                    value={htfTimeframe}
-                    onChange={(e) => setHTFTimeframe(e.target.value)}
+                    value={htf}
+                    onChange={(e) => setHTF(e.target.value)}
                     className="bg-dark-bg border border-dark-border rounded px-2 py-1 text-sm text-dark-text focus:outline-none focus:border-bull"
                   >
                     {htfTimeframes.map((tf) => (
@@ -297,7 +265,7 @@ const Dashboard = () => {
               <div className="w-80 flex flex-col space-y-4 p-4">
                 {/* Signal Panel */}
                 <div className="h-1/2">
-                  <SignalPanel />
+                  <MTFSignalPanel />
                 </div>
 
                 {/* Session Heatmap */}

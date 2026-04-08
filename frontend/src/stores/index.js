@@ -1,12 +1,11 @@
 import { create } from 'zustand';
-import { mockActiveSignal, mockHistoricalTrades } from '../data/mockData';
 
 // Import individual stores
 export { usePriceStore } from './priceStore';
 
 export const useSignalStore = create((set, get) => ({
-  activeSignal: mockActiveSignal,
-  historicalSignals: mockHistoricalTrades,
+  activeSignal: null, // Start with null, let MTF analysis provide real signals
+  historicalSignals: [], // Start empty, will be populated by real data
   scanning: false,
   lastAnalyzed: Date.now() - 120000,
   mlFilterEnabled: true,

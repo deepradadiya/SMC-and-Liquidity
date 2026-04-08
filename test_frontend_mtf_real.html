@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Frontend MTF Connection - Real Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .success { color: #00ff88; }
+        .error { color: #ff6b6b; }
+        .loading { color: #ffa500; }
+        pre { background: #2a2a2a; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        button { padding: 10px 20px; margin: 10px; background: #007acc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #005a99; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Frontend MTF API Connection Test</h1>
+    <p>This test verifies that the frontend can connect to the real MTF API and get live BTC data.</p>
+    
+    <button onclick="testMTFConnection()">🚀 Test MTF API Connection</button>
+    <button onclick="testWithProxy()">🔄 Test with Proxy (via /api)</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        async function testMTFConnection() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="loading">🔄 Testing direct MTF API connection...</div>';
+            
+            try {
+                console.log('Testing MTF API...');
+                
+                // Test direct connection to backend
+                const response = await fetch('http://localhost:8000/api/mtf/mtf-analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        symbol: 'BTCUSDT',
+                        entry_tf: '5m',
+                        htf: '4h',
+                        mtf: '1h'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                results.innerHTML = `
+                    <h2 class="success">✅ MTF API Connection Successful!</h2>
+                    <div><strong>🎯 This is the REAL data that should appear in your UI:</strong></div>
+                    <div class="success"><strong>Current BTC Price (Entry):</strong> $${data.entry}</div>
+                    <div class="success"><strong>Confluence Score:</strong> ${data.confluence_score}/100</div>
+                    <div class="success"><strong>Bias:</strong> ${data.bias}</div>
+                    <div class="success"><strong>Signal Valid:</strong> ${data.signal_valid}</div>
+                    <div class="success"><strong>Stop Loss:</strong> $${data.sl}</div>
+                    <div class="success"><strong>Take Profit:</strong> $${data.tp}</div>
+                    
+                    <h3>🔍 Confluence Reasons:</h3>
+                    <ul>
+                        ${data.reasons.map(reason => `<li>${reason}</li>`).join('')}
+                    </ul>
+                    
+                    <h3>📊 Raw API Response:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #2a4a2a; border-radius: 5px;">
+                        <strong>🎯 Expected in UI:</strong><br>
+                        • Entry Price: $${data.entry} (NOT $66,250)<br>
+                        • This should appear in the MTF Signal Panel<br>
+                        • If you still see $66,250, there's a frontend caching issue
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('MTF API Test Error:', error);
+                results.innerHTML = `
+                    <h2 class="error">❌ MTF API Connection Failed</h2>
+                    <div class="error"><strong>Error:</strong> ${error.message}</div>
+                    <div>Possible issues:</div>
+                    <ul>
+                        <li>Backend server not running on http://localhost:8000</li>
+                        <li>CORS issues (check browser console)</li>
+                        <li>Network connectivity problems</li>
+                    </ul>
+                    <div>Try starting the backend: <code>cd backend && python run.py</code></div>
+                `;
+            }
+        }
+        
+        async function testWithProxy() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="loading">🔄 Testing MTF API via proxy (/api)...</div>';
+            
+            try {
+                // Test via proxy (how the React app should connect)
+                const response = await fetch('/api/mtf/mtf-analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        symbol: 'BTCUSDT',
+                        entry_tf: '5m',
+                        htf: '4h',
+                        mtf: '1h'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                results.innerHTML = `
+                    <h2 class="success">✅ Proxy MTF API Connection Successful!</h2>
+                    <div class="success">The React app should be able to connect via proxy.</div>
+                    <div class="success"><strong>BTC Price via Proxy:</strong> $${data.entry}</div>
+                    <div class="success"><strong>Confluence Score:</strong> ${data.confluence_score}/100</div>
+                `;
+                
+            } catch (error) {
+                console.error('Proxy MTF API Test Error:', error);
+                results.innerHTML = `
+                    <h2 class="error">❌ Proxy Connection Failed</h2>
+                    <div class="error"><strong>Error:</strong> ${error.message}</div>
+                    <div>The React app proxy might not be configured correctly.</div>
+                    <div>Try the direct connection test instead.</div>
+                `;
+            }
+        }
+        
+        // Auto-run test when page loads
+        window.onload = () => {
+            testMTFConnection();
+        };
+    </script>
+</body>
+</html>

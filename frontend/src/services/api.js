@@ -116,15 +116,41 @@ export const generateSignal = async (symbol, timeframe) => {
 };
 
 // MTF Confluence Analysis
-export const analyzeMTFConfluence = async (symbol, timeframes) => {
+export const analyzeMTFConfluence = async (symbol, entry_tf = "5m", htf = "4h", mtf = "1h") => {
   try {
-    const response = await api.post('/mtf/analyze', {
+    const response = await api.post('/mtf/mtf-analyze', {
       symbol,
-      timeframes
+      entry_tf,
+      htf,
+      mtf
     });
     return response.data;
   } catch (error) {
     console.error('Failed to analyze MTF confluence:', error);
+    return null;
+  }
+};
+
+// Get MTF timeframes
+export const getMTFTimeframes = async () => {
+  try {
+    const response = await api.get('/mtf/mtf-timeframes');
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get MTF timeframes:', error);
+    return null;
+  }
+};
+
+// Get MTF status
+export const getMTFStatus = async (symbol, htf = "4h") => {
+  try {
+    const response = await api.get(`/mtf/mtf-status/${symbol}`, {
+      params: { htf }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get MTF status:', error);
     return null;
   }
 };
