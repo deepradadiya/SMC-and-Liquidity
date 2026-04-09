@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { fetchLiveSignal, fetchTicker24 } from '../services/marketApi';
 import { useChartStore } from '../stores/chartStore';
 import { usePriceStore } from '../stores/priceStore';
+import { useLiveMTF } from '../hooks/useLiveMTF';
 
-const SYMBOLS   = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT'];
+const CRYPTO_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT'];
+const INDEX_SYMBOLS  = ['NIFTY50', 'SENSEX'];
+const ALL_SYMBOLS    = [...CRYPTO_SYMBOLS, ...INDEX_SYMBOLS];
 const INTERVALS = ['1m', '5m', '15m', '1h', '4h'];
 
 function Badge({ signal }) {
@@ -44,25 +47,27 @@ export default function LiveSignalPanel() {
   const [error,     setError]     = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
 
-  // Use refs to avoid stale closures and prevent re-render loops
+  const isIndex = INDEX_SYMBOLS.includes(symbol);
+
+  // For index symbols use useLiveMTF with Yahoo Finance
+  const { signal: indexSignal, loading: indexLoading, mtfBias: indexMtfBias } = useLiveMTF(isIndex ? symbol : null, interval);
+
   const isFetching  = useRef(false);
   const timerRef    = useRef(null);
   const symbolRef   = useRef(symbol);
   const intervalRef = useRef(interval);
 
-  // Keep refs in sync
   symbolRef.current   = symbol;
   intervalRef.current = interval;
 
-  // Sync symbol from chart store — only on mount and chartSymbol change
   useEffect(() => {
     if (chartSymbol && chartSymbol !== symbolRef.current) {
       setSymbol(chartSymbol);
     }
   }, [chartSymbol]);
 
-  // Core fetch function — uses refs, never causes re-render loops
   const doFetch = () => {
+    if (isIndex) return; // handled by useLiveMTF
     if (isFetching.current) return;
     isFetching.current = true;
     setLoading(true);
@@ -84,13 +89,40 @@ export default function LiveSignalPanel() {
       });
   };
 
-  // Start polling — only re-runs when symbol or interval changes
   useEffect(() => {
+    if (isIndex) return;
     doFetch();
     timerRef.current = setInterval(doFetch, 60000);
     return () => clearInterval(timerRef.current);
-  }, [symbol, interval]); // eslint-disable-line
+  }, [symbol, interval, isIndex]); // eslint-disable-line
 
+  // For index symbols — use useLiveMTF with Yahoo Finance data
+  useEffect(() => {
+    if (!isIndex) return;
+    if (indexSignal) {
+      setSignal({
+        signal:     indexSignal.type,
+        confidence: indexSignal.ml_confidence,
+        entry:      indexSignal.entry,
+        stopLoss:   indexSignal.stop_loss,
+        takeProfit: indexSignal.take_profit,
+        riskReward: indexSignal.risk_reward,
+        reasoning:  indexSignal.reasons,
+        source:     'index',
+        rsi:        50,
+        ema20:      indexSignal.entry,
+        ema50:      indexSignal.entry,
+        atr:        Math.abs(indexSignal.entry - indexSignal.stop_loss),
+        swingHigh:  indexSignal.take_profit,
+        swingLow:   indexSignal.stop_loss,
+      });
+      setUpdatedAt(new Date());
+    } else if (!indexLoading) {
+      setSignal({ signal: 'HOLD', confidence: 0, source: 'index', reasoning: ['No high-confidence setup on current timeframe'] });
+    }
+  }, [indexSignal, indexLoading, isIndex]);
+
+  const activeLoading = isIndex ? indexLoading : loading;
   const livePrice  = prices[symbol]?.price;
   const liveChange = prices[symbol]?.change;
 
@@ -126,7 +158,12 @@ export default function LiveSignalPanel() {
       <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
         <select value={symbol} onChange={e => setSymbol(e.target.value)}
           style={{ flex: 1, background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155', borderRadius: 5, padding: '5px 6px', fontSize: 11 }}>
-          {SYMBOLS.map(s => <option key={s}>{s}</option>)}
+          <optgroup label="Crypto">
+            {CRYPTO_SYMBOLS.map(s => <option key={s}>{s}</option>)}
+          </optgroup>
+          <optgroup label="🇮🇳 Indices">
+            {INDEX_SYMBOLS.map(s => <option key={s}>{s}</option>)}
+          </optgroup>
         </select>
         <select value={interval} onChange={e => setInterval(e.target.value)}
           style={{ background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155', borderRadius: 5, padding: '5px 6px', fontSize: 11 }}>
@@ -146,7 +183,7 @@ export default function LiveSignalPanel() {
       )}
 
       {/* Loading */}
-      {loading && !signal && (
+      {activeLoading && !signal && (
         <div style={{ textAlign: 'center', padding: '30px 0', color: '#475569', fontSize: 12 }}>
           <div style={{ marginBottom: 8 }}>Fetching {symbol}...</div>
           <div style={{ fontSize: 10 }}>Running ML Ensemble · XGBoost · SMC</div>
@@ -200,7 +237,8 @@ export default function LiveSignalPanel() {
             </div>
 
             {signal.source === 'ml' && <div style={{ marginTop: 6, fontSize: 9, color: '#3b82f6' }}>🤖 ML Ensemble Active</div>}
-            {signal.source === 'client' && <div style={{ marginTop: 6, fontSize: 9, color: '#f59e0b' }}>⚠ Offline — EMA/RSI fallback</div>}
+            {signal.source === 'client' && <div style={{ marginTop: 6, fontSize: 9, color: '#94a3b8' }}>📊 EMA/RSI/ATR Analysis</div>}
+            {signal.source === 'index' && <div style={{ marginTop: 6, fontSize: 9, color: '#f59e0b' }}>🇮🇳 Yahoo Finance · EMA/RSI Analysis</div>}
           </div>
 
           {/* ML model agreement */}

@@ -76,6 +76,56 @@ def health():
     return {"status": "ok", "model_loaded": model is not None}
 
 
+@app.get("/index-candles")
+def index_candles(symbol: str = "NIFTY50", interval: str = "15m", limit: int = 300):
+    try:
+        import yfinance as yf
+        import threading
+    except ImportError:
+        raise HTTPException(status_code=503, detail="yfinance not installed")
+
+    ticker_map = {"NIFTY50": "^NSEI", "SENSEX": "^BSESN"}
+    ticker = ticker_map.get(symbol.upper())
+    if not ticker:
+        raise HTTPException(status_code=400, detail=f"Unknown symbol: {symbol}")
+
+    period_map = {
+        "1m": "7d", "2m": "60d", "5m": "60d", "10m": "60d",
+        "15m": "60d", "30m": "60d", "1h": "730d", "4h": "730d",
+        "1d": "5y", "1wk": "10y", "1mo": "10y",
+    }
+    period = period_map.get(interval, "60d")
+
+    # yfinance doesn't support 4h — use 1h instead
+    yf_interval = "1h" if interval == "4h" else interval
+
+    try:
+        t = yf.Ticker(ticker)
+        df = t.history(period=period, interval=yf_interval)
+        if df is None or df.empty:
+            raise HTTPException(status_code=404, detail="No data returned")
+
+        df = df.tail(limit)
+        candles = []
+        for ts, row in df.iterrows():
+            try:
+                candles.append({
+                    "time":   int(ts.timestamp()),
+                    "open":   round(float(row["Open"]), 2),
+                    "high":   round(float(row["High"]), 2),
+                    "low":    round(float(row["Low"]), 2),
+                    "close":  round(float(row["Close"]), 2),
+                    "volume": int(row["Volume"]) if not pd.isna(row["Volume"]) else 0,
+                })
+            except Exception:
+                continue
+        return {"symbol": symbol, "interval": interval, "candles": candles}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/predict", response_model=PredictResponse)
 def predict(req: PredictRequest):
     if model is None:

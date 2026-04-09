@@ -110,7 +110,7 @@ export async function fetchMultiplePrices(symbols = ['BTCUSDT', 'ETHUSDT']) {
 
 // ─── SIGNAL ENGINE — ML model API → proxy fallback → client-side fallback ─────
 
-const ML_API = process.env.REACT_APP_ML_API_URL || 'http://localhost:8000';
+const ML_API = process.env.REACT_APP_ML_API_URL || 'https://signovax.onrender.com';
 
 // Cache last candles to avoid hammering Binance
 const _candleCache = {};

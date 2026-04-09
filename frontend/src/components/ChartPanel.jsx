@@ -4,7 +4,8 @@ import { useChartStore } from '../stores/chartStore';
 import { useSignalStore } from '../stores';
 import { usePriceStore } from '../stores/priceStore';
 import { fetchCandles, fetchLiveSignal } from '../services/marketApi';
-import { generateMockCandles, mockOrderBlocks, mockLiquidityZones } from '../data/mockData';
+import { fetchYahooCandles, isIndexSymbol } from '../services/yahooFinance';
+import { generateMockCandles } from '../data/mockData';
 import { Camera, RotateCcw, TrendingUp, Wifi, WifiOff } from 'lucide-react';
 
 const TF_MAP = { '1m':'1m', '5m':'5m', '15m':'15m', '1h':'1h', '4h':'4h', '1D':'1d' };
@@ -16,9 +17,9 @@ const ChartPanel = () => {
   const overlaySeriesRef  = useRef([]);
   const candleBufferRef   = useRef([]);
   const klineWsRef        = useRef(null);
-  const chartReadyRef     = useRef(false);
 
-  const { symbol, timeframe,
+  const {
+    symbol, timeframe,
     showOrderBlocks, showFVGs, showLiquidityZones,
     showBosChoch, showSessionBoxes, showHTFLevels,
     toggleOrderBlocks, toggleFVGs, toggleLiquidityZones,
@@ -28,21 +29,21 @@ const ChartPanel = () => {
   const { updateLastAnalyzed } = useSignalStore();
   const { prices } = usePriceStore();
 
-  const [loading,    setLoading]    = useState(true);
-  const [analyzing,  setAnalyzing]  = useState(false);
+  const [loading,   setLoading]   = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
   const [signalData, setSignalData] = useState(null);
-  const [wsLive,     setWsLive]     = useState(false);
-  const [error,      setError]      = useState(null);
+  const [wsLive,    setWsLive]    = useState(false);
 
   const binanceInterval = TF_MAP[timeframe] || '15m';
+  const isIndex = isIndexSymbol(symbol);
 
-  // ── 1. Init chart FIRST (synchronous, no async) ──────────────────────────
+  // ── 1. Init chart once ───────────────────────────────────────────────────
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
     const chart = createChart(chartContainerRef.current, {
-      width:  chartContainerRef.current.clientWidth,
-      height: chartContainerRef.current.clientHeight,
+      width:  chartContainerRef.current.clientWidth || 800,
+      height: chartContainerRef.current.clientHeight || 500,
       layout: { background: { color: '#0a0e17' }, textColor: '#94a3b8' },
       grid:   { vertLines: { color: '#1a2235' }, horzLines: { color: '#1a2235' } },
       crosshair: {
@@ -61,42 +62,51 @@ const ChartPanel = () => {
 
     chartRef.current        = chart;
     candleSeriesRef.current = series;
-    chartReadyRef.current   = true;
 
-    const onResize = () => {
+    const ro = new ResizeObserver(() => {
       if (chartContainerRef.current && chartRef.current) {
         chartRef.current.applyOptions({
           width:  chartContainerRef.current.clientWidth,
           height: chartContainerRef.current.clientHeight,
         });
       }
-    };
-    window.addEventListener('resize', onResize);
+    });
+    ro.observe(chartContainerRef.current);
 
     return () => {
-      chartReadyRef.current = false;
-      window.removeEventListener('resize', onResize);
+      ro.disconnect();
       chartRef.current?.remove();
       chartRef.current        = null;
       candleSeriesRef.current = null;
     };
-  }, []); // once only
+  }, []);
 
-  // ── 2. Load historical candles (REST) ────────────────────────────────────
+  // ── 2. Load candles on symbol/timeframe change ───────────────────────────
   const loadHistory = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setSignalData(null);
+    if (candleSeriesRef.current) {
+      try { candleSeriesRef.current.setData([]); } catch (_) {}
+    }
+    candleBufferRef.current = [];
+
     try {
-      const candles = await fetchCandles(symbol, binanceInterval, 500);
+      const candles = isIndex
+        ? await fetchYahooCandles(symbol, binanceInterval, 500)
+        : await fetchCandles(symbol, binanceInterval, 500);
+
+      if (!candles || candles.length === 0) throw new Error('No data');
       candles.sort((a, b) => a.time - b.time);
       candleBufferRef.current = candles;
-      // Wait until chart is ready
       if (candleSeriesRef.current) {
         candleSeriesRef.current.setData(candles);
         chartRef.current?.timeScale().fitContent();
       }
     } catch {
-      const mock = generateMockCandles(300, prices[symbol]?.price || 67000);
+      const fallback = isIndex
+        ? (symbol === 'NIFTY50' ? 23775 : 76632)
+        : (prices[symbol]?.price || 67000);
+      const mock = generateMockCandles(300, fallback);
       candleBufferRef.current = mock;
       if (candleSeriesRef.current) {
         candleSeriesRef.current.setData(mock);
@@ -105,68 +115,55 @@ const ChartPanel = () => {
     } finally {
       setLoading(false);
     }
-  }, [symbol, binanceInterval]); // eslint-disable-line
+  }, [symbol, binanceInterval, isIndex]); // eslint-disable-line
 
   useEffect(() => {
-    // Small delay to ensure chart is initialized before loading data
-    const t = setTimeout(loadHistory, 100);
+    const t = setTimeout(loadHistory, 50);
     return () => clearTimeout(t);
   }, [loadHistory]);
 
-  // ── 3. Kline WebSocket — dedicated connection for chart candles ──────────
+  // ── 3. Kline WebSocket (crypto only) ────────────────────────────────────
   useEffect(() => {
-    // Close previous kline WS
     if (klineWsRef.current) {
       klineWsRef.current.onclose = null;
       klineWsRef.current.close();
       klineWsRef.current = null;
     }
     setWsLive(false);
+    if (isIndex) return;
 
-    const streamName = `${symbol.toLowerCase()}@kline_${binanceInterval}`;
-    const url = `wss://stream.binance.com:9443/ws/${streamName}`;
-
-    let reconnectTimer = null;
+    const url = `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@kline_${binanceInterval}`;
     let alive = true;
+    let reconnectTimer = null;
 
     const connect = () => {
       if (!alive) return;
       const ws = new WebSocket(url);
       klineWsRef.current = ws;
-
-      ws.onopen = () => {
+      ws.onopen  = () => { if (alive) setWsLive(true); };
+      ws.onerror = () => {};
+      ws.onclose = () => {
         if (!alive) return;
-        setWsLive(true);
+        setWsLive(false);
+        reconnectTimer = setTimeout(connect, 3000);
       };
-
       ws.onmessage = (evt) => {
         if (!alive || !candleSeriesRef.current) return;
         try {
-          const msg = JSON.parse(evt.data);
-          const k   = msg.k;
+          const k = JSON.parse(evt.data).k;
           if (!k) return;
-
           const candle = {
             time:  Math.floor(k.t / 1000),
-            open:  parseFloat(k.o),
-            high:  parseFloat(k.h),
-            low:   parseFloat(k.l),
-            close: parseFloat(k.c),
+            open:  parseFloat(k.o), high: parseFloat(k.h),
+            low:   parseFloat(k.l), close: parseFloat(k.c),
           };
-
-          const buf  = candleBufferRef.current;
-          if (buf.length === 0) return;
+          const buf = candleBufferRef.current;
+          if (!buf.length) return;
           const last = buf[buf.length - 1];
-
           if (candle.time === last.time) {
-            const updated = {
-              ...candle,
-              open: last.open,
-              high: Math.max(last.high, candle.high),
-              low:  Math.min(last.low,  candle.low),
-            };
-            buf[buf.length - 1] = updated;
-            candleSeriesRef.current.update(updated);
+            const u = { ...candle, open: last.open, high: Math.max(last.high, candle.high), low: Math.min(last.low, candle.low) };
+            buf[buf.length - 1] = u;
+            candleSeriesRef.current.update(u);
           } else if (candle.time > last.time) {
             buf.push(candle);
             if (buf.length > 1000) buf.shift();
@@ -174,87 +171,39 @@ const ChartPanel = () => {
           }
         } catch { /* ignore */ }
       };
-
-      ws.onerror = () => {};
-
-      ws.onclose = () => {
-        if (!alive) return;
-        setWsLive(false);
-        reconnectTimer = setTimeout(connect, 3000);
-      };
     };
 
     connect();
-
     return () => {
       alive = false;
       clearTimeout(reconnectTimer);
-      if (klineWsRef.current) {
-        klineWsRef.current.onclose = null;
-        klineWsRef.current.close();
-        klineWsRef.current = null;
-      }
+      if (klineWsRef.current) { klineWsRef.current.onclose = null; klineWsRef.current.close(); }
     };
-  }, [symbol, binanceInterval]);
+  }, [symbol, binanceInterval, isIndex]);
 
-  // ── 4. SMC overlays ──────────────────────────────────────────────────────
+  // ── 4. Overlays ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!chartRef.current) return;
-    overlaySeriesRef.current.forEach(s => {
-      try { chartRef.current.removeSeries(s); } catch (_) {}
-    });
+    overlaySeriesRef.current.forEach(s => { try { chartRef.current.removeSeries(s); } catch (_) {} });
     overlaySeriesRef.current = [];
 
-    if (showOrderBlocks) {
-      mockOrderBlocks.forEach(ob => {
-        const color = ob.type === 'bullish' ? '#10b981' : '#ef4444';
-        ['price_high', 'price_low'].forEach(key => {
-          const s = chartRef.current.addSeries(LineSeries, {
-            color: 'transparent', lineWidth: 0,
-            priceLineVisible: false, lastValueVisible: false,
-          });
-          s.setData([
-            { time: Math.floor(ob.time_start), value: ob[key] },
-            { time: Math.floor(ob.time_end),   value: ob[key] },
-          ]);
-          s.createPriceLine({ price: ob[key], color, lineWidth: 1, lineStyle: 2, axisLabelVisible: true });
-          overlaySeriesRef.current.push(s);
-        });
-      });
-    }
-
-    if (showLiquidityZones) {
-      mockLiquidityZones.filter(z => !z.swept).forEach(liq => {
-        const s = chartRef.current.addSeries(LineSeries, {
-          color: '#8b5cf6', lineWidth: 1, lineStyle: 2, priceLineVisible: false,
-        });
-        const now = Math.floor(Date.now() / 1000);
-        s.setData([
-          { time: Math.floor(liq.time), value: liq.price },
-          { time: now,                  value: liq.price },
-        ]);
-        overlaySeriesRef.current.push(s);
-      });
-    }
-
     if (signalData && signalData.signal !== 'HOLD') {
-      const now  = Math.floor(Date.now() / 1000);
+      const now = Math.floor(Date.now() / 1000);
       const past = now - 3600;
       [
-        { price: signalData.currentPrice, color: signalData.signal === 'BUY' ? '#10b981' : '#ef4444', title: `${signalData.signal} Entry` },
-        { price: signalData.stopLoss,     color: '#ef4444', title: 'Stop Loss'   },
-        { price: signalData.takeProfit,   color: '#10b981', title: 'Take Profit' },
+        { price: signalData.currentPrice, color: signalData.signal === 'BUY' ? '#10b981' : '#ef4444', title: `${signalData.signal}` },
+        { price: signalData.stopLoss,     color: '#ef4444', title: 'SL' },
+        { price: signalData.takeProfit,   color: '#10b981', title: 'TP' },
       ].filter(l => l.price).forEach(level => {
-        const s = chartRef.current.addSeries(LineSeries, {
-          color: 'transparent', lineWidth: 0,
-          priceLineVisible: false, lastValueVisible: false,
-        });
-        s.setData([{ time: past, value: level.price }, { time: now, value: level.price }]);
-        s.createPriceLine({ price: level.price, color: level.color, lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: level.title });
-        overlaySeriesRef.current.push(s);
+        try {
+          const s = chartRef.current.addSeries(LineSeries, { color: 'transparent', lineWidth: 0, priceLineVisible: false, lastValueVisible: false });
+          s.setData([{ time: past, value: level.price }, { time: now, value: level.price }]);
+          s.createPriceLine({ price: level.price, color: level.color, lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: level.title });
+          overlaySeriesRef.current.push(s);
+        } catch (_) {}
       });
     }
-  }, [showOrderBlocks, showFVGs, showLiquidityZones, showBosChoch, showSessionBoxes, showHTFLevels, signalData]);
+  }, [signalData, showOrderBlocks, showFVGs, showLiquidityZones, showBosChoch, showSessionBoxes, showHTFLevels]);
 
   // ── 5. Analyze ───────────────────────────────────────────────────────────
   const handleAnalyze = async () => {
@@ -263,21 +212,9 @@ const ChartPanel = () => {
       const result = await fetchLiveSignal(symbol, binanceInterval);
       setSignalData(result);
       updateLastAnalyzed();
-    } catch {
-      setError('Signal fetch failed');
-    } finally {
+    } catch { /* ignore */ } finally {
       setAnalyzing(false);
     }
-  };
-
-  const handleResetZoom  = () => chartRef.current?.timeScale().fitContent();
-  const handleScreenshot = () => {
-    const canvas = chartContainerRef.current?.querySelector('canvas');
-    if (!canvas) return;
-    const a = document.createElement('a');
-    a.download = `${symbol}_${timeframe}.png`;
-    a.href = canvas.toDataURL();
-    a.click();
   };
 
   const livePrice = prices[symbol]?.price;
@@ -300,13 +237,10 @@ const ChartPanel = () => {
             {signalData.signal === 'BUY' ? '▲ BUY' : signalData.signal === 'SELL' ? '▼ SELL' : '◆ HOLD'}
           </span>
           {[
-            ['Confidence', `${signalData.confidence}%`],
-            ['RSI', signalData.rsi],
-            ['EMA20', `$${Number(signalData.ema20).toLocaleString()}`],
-            ['EMA50', `$${Number(signalData.ema50).toLocaleString()}`],
+            ['Conf', `${signalData.confidence}%`],
             ...(signalData.signal !== 'HOLD' ? [
-              ['SL', `$${Number(signalData.stopLoss).toLocaleString()}`],
-              ['TP', `$${Number(signalData.takeProfit).toLocaleString()}`],
+              ['SL', `${Number(signalData.stopLoss || 0).toLocaleString()}`],
+              ['TP', `${Number(signalData.takeProfit || 0).toLocaleString()}`],
               ['R:R', '1:2'],
             ] : []),
           ].map(([label, val]) => (
@@ -321,40 +255,40 @@ const ChartPanel = () => {
         </div>
       )}
 
-      {/* Chart container */}
+      {/* Chart */}
       <div ref={chartContainerRef} className="flex-1 relative">
-
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center z-10"
             style={{ backgroundColor: 'rgba(10,14,23,0.85)' }}>
             <div className="text-center">
               <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
               <div style={{ color: '#f1f5f9', fontSize: 12 }}>Loading {symbol} {timeframe}...</div>
+              {isIndex && <div style={{ color: '#64748b', fontSize: 10, marginTop: 4 }}>Fetching from yfinance backend...</div>}
             </div>
           </div>
         )}
 
-        {/* Live price — top left */}
-        {!loading && livePrice && (
+        {!isIndex && !loading && livePrice && (
           <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded text-xs font-bold"
-            style={{
-              backgroundColor: '#0f172a',
-              border: `1px solid ${wsLive ? '#10b981' : '#f59e0b'}`,
-              color: wsLive ? '#10b981' : '#f59e0b',
-            }}>
-            {wsLive ? '⚡ LIVE' : '○ REST'}
-            &nbsp; ${Number(livePrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            style={{ backgroundColor: '#0f172a', border: `1px solid ${wsLive ? '#10b981' : '#f59e0b'}`, color: wsLive ? '#10b981' : '#f59e0b' }}>
+            {wsLive ? '⚡ LIVE' : '○ REST'} ${Number(livePrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         )}
 
-        {/* WS status — top right */}
-        {!loading && (
+        {!isIndex && !loading && (
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 px-2 py-1 rounded text-xs"
             style={{ backgroundColor: '#0f172a', border: `1px solid ${wsLive ? '#10b981' : '#3b82f6'}` }}>
             {wsLive
-              ? <><Wifi    className="w-3 h-3" style={{ color: '#10b981' }} /><span style={{ color: '#10b981' }}>WebSocket Live</span></>
+              ? <><Wifi className="w-3 h-3" style={{ color: '#10b981' }} /><span style={{ color: '#10b981' }}>WebSocket Live</span></>
               : <><WifiOff className="w-3 h-3" style={{ color: '#3b82f6' }} /><span style={{ color: '#3b82f6' }}>Connecting...</span></>
             }
+          </div>
+        )}
+
+        {isIndex && !loading && (
+          <div className="absolute top-3 left-3 z-10 px-3 py-1 rounded text-xs font-bold"
+            style={{ backgroundColor: '#0f172a', border: '1px solid #f59e0b', color: '#f59e0b' }}>
+            🇮🇳 {symbol === 'NIFTY50' ? 'NIFTY 50' : 'SENSEX'} · Daily Data
           </div>
         )}
       </div>
@@ -364,12 +298,12 @@ const ChartPanel = () => {
         style={{ backgroundColor: 'var(--bg-secondary)' }}>
         <div className="flex items-center gap-2">
           {[
-            { key: 'orderBlocks', label: 'OB',      active: showOrderBlocks,    toggle: toggleOrderBlocks },
-            { key: 'fvgs',        label: 'FVG',     active: showFVGs,           toggle: toggleFVGs },
-            { key: 'liquidity',   label: 'LIQ',     active: showLiquidityZones, toggle: toggleLiquidityZones },
-            { key: 'structure',   label: 'BOS',     active: showBosChoch,       toggle: toggleBosChoch },
-            { key: 'sessions',    label: 'SESSION', active: showSessionBoxes,   toggle: toggleSessionBoxes },
-            { key: 'htf',         label: 'HTF',     active: showHTFLevels,      toggle: toggleHTFLevels },
+            { key: 'ob',  label: 'OB',      active: showOrderBlocks,    toggle: toggleOrderBlocks },
+            { key: 'fvg', label: 'FVG',     active: showFVGs,           toggle: toggleFVGs },
+            { key: 'liq', label: 'LIQ',     active: showLiquidityZones, toggle: toggleLiquidityZones },
+            { key: 'bos', label: 'BOS',     active: showBosChoch,       toggle: toggleBosChoch },
+            { key: 'ses', label: 'SESSION', active: showSessionBoxes,   toggle: toggleSessionBoxes },
+            { key: 'htf', label: 'HTF',     active: showHTFLevels,      toggle: toggleHTFLevels },
           ].map(o => (
             <button key={o.key} onClick={o.toggle}
               className="px-3 py-1 text-xs font-medium rounded transition-colors"
@@ -379,10 +313,12 @@ const ChartPanel = () => {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={handleScreenshot} className="p-1.5 rounded hover:bg-[var(--bg-hover)]" style={{ color: 'var(--text-secondary)' }}>
+          <button onClick={() => { const c = chartContainerRef.current?.querySelector('canvas'); if (!c) return; const a = document.createElement('a'); a.download = `${symbol}.png`; a.href = c.toDataURL(); a.click(); }}
+            className="p-1.5 rounded hover:bg-[var(--bg-hover)]" style={{ color: 'var(--text-secondary)' }}>
             <Camera className="w-4 h-4" />
           </button>
-          <button onClick={handleResetZoom} className="p-1.5 rounded hover:bg-[var(--bg-hover)]" style={{ color: 'var(--text-secondary)' }}>
+          <button onClick={() => chartRef.current?.timeScale().fitContent()}
+            className="p-1.5 rounded hover:bg-[var(--bg-hover)]" style={{ color: 'var(--text-secondary)' }}>
             <RotateCcw className="w-4 h-4" />
           </button>
           <button onClick={handleAnalyze} disabled={analyzing}
