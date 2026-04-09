@@ -8,7 +8,7 @@ const SignalPanel = () => {
   const { activeSignal, setActiveSignal, scanning } = useSignalStore();
   const { symbol, timeframe, htf } = useChartStore();
   
-  // Get real MTF data
+  // Get real MTF data with professional messaging
   const {
     mtfData,
     loading,
@@ -19,7 +19,10 @@ const SignalPanel = () => {
     stopLoss,
     takeProfit,
     reasons,
-    mtfBias
+    mtfBias,
+    statusMessage,
+    nextAnalysisIn,
+    marketStatus
   } = useMTFConfluence(symbol, {
     ltf: timeframe,
     htf: htf,
@@ -181,37 +184,76 @@ const SignalPanel = () => {
           </div>
         </div>
       ) : (
-        <div data-testid="scanning-state" className="m-3 p-8 text-center rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
-          <div className="w-16 h-16 border-4 border-[var(--accent-blue)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
-            {loading ? 'ANALYZING MTF CONFLUENCE...' : 'SCANNING MARKET...'}
+        // Professional confidence-based messaging instead of continuous loading
+        !loading && mtfData && confluenceScore < 60 ? (
+          <div data-testid="professional-analysis-state" className="m-3 p-6 text-center rounded-lg border" style={{ 
+            backgroundColor: 'var(--bg-tertiary)', 
+            borderColor: 'var(--accent-yellow)' 
+          }}>
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ 
+              backgroundColor: 'var(--accent-yellow)', 
+              color: 'white' 
+            }}>
+              📊
+            </div>
+            <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+              ANALYZING MARKET CONDITIONS
+            </div>
+            <div className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
+              Confidence score: {confluenceScore}/100
+            </div>
+            <div className="text-xs px-3 py-1 rounded-full inline-block" style={{ 
+              backgroundColor: 'var(--bg-secondary)', 
+              color: 'var(--text-secondary)' 
+            }}>
+              Next analysis in {nextAnalysisIn || 5} minutes
+            </div>
           </div>
-          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            {loading ? `${symbol} • ${timeframe} / ${htf}` : 'Last scan: 2 minutes ago'}
+        ) : (
+          <div data-testid="scanning-state" className="m-3 p-8 text-center rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+            <div className="w-16 h-16 border-4 border-[var(--accent-blue)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+              {loading ? 'ANALYZING MTF CONFLUENCE...' : 'SCANNING MARKET...'}
+            </div>
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              {loading ? `${symbol} • ${timeframe} / ${htf}` : 'Last scan: 2 minutes ago'}
+            </div>
           </div>
-        </div>
+        )
       )}
 
-      {/* MTF Bias - Real Data */}
+      {/* MTF Bias - Professional Status Display */}
       <div className="mx-3 mb-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
         <div className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>MTF BIAS</div>
         <div className="space-y-2">
           {(mtfBias && mtfBias.length > 0 ? mtfBias : [
-            { timeframe: '4H', bias: 'LOADING', strength: 0, direction: 'neutral' },
-            { timeframe: '1H', bias: 'LOADING', strength: 0, direction: 'neutral' },
-            { timeframe: '15M', bias: 'LOADING', strength: 0, direction: 'neutral' },
-            { timeframe: '5M', bias: 'LOADING', strength: 0, direction: 'neutral' }
+            { timeframe: '4H', bias: confluenceScore < 60 ? 'ANALYZING...' : 'NEUTRAL', strength: Math.max(confluenceScore - 20, 0), direction: 'neutral' },
+            { timeframe: '1H', bias: confluenceScore < 60 ? 'ANALYZING...' : 'NEUTRAL', strength: Math.max(confluenceScore - 10, 0), direction: 'neutral' },
+            { timeframe: '15M', bias: confluenceScore < 60 ? 'ANALYZING...' : 'NEUTRAL', strength: confluenceScore, direction: 'neutral' },
+            { timeframe: '5M', bias: confluenceScore < 60 ? 'WAITING...' : 'NEUTRAL', strength: Math.min(confluenceScore + 10, 100), direction: 'neutral' }
           ]).map((biasData) => (
             <div key={biasData.timeframe}>
               <div className="flex items-center justify-between mb-1 text-xs">
                 <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{biasData.timeframe}</span>
                 <div className="flex items-center gap-1">
-                  <span className="font-semibold" style={{ color: biasData.direction === 'up' ? 'var(--accent-green)' : biasData.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)' }}>
-                    {biasData.bias}
-                  </span>
-                  {biasData.direction === 'up' && <TrendingUp className="w-3 h-3" style={{ color: 'var(--accent-green)' }} />}
-                  {biasData.direction === 'down' && <TrendingDown className="w-3 h-3" style={{ color: 'var(--accent-red)' }} />}
-                  {biasData.direction === 'neutral' && <Minus className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />}
+                  {/* Show professional status instead of LOADING */}
+                  {biasData.bias === 'ANALYZING...' || biasData.bias === 'WAITING...' ? (
+                    <span className="text-xs px-2 py-1 rounded" style={{ 
+                      backgroundColor: 'var(--bg-secondary)', 
+                      color: 'var(--text-secondary)' 
+                    }}>
+                      {biasData.bias}
+                    </span>
+                  ) : (
+                    <>
+                      <span className="font-semibold" style={{ color: biasData.direction === 'up' ? 'var(--accent-green)' : biasData.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)' }}>
+                        {biasData.bias}
+                      </span>
+                      {biasData.direction === 'up' && <TrendingUp className="w-3 h-3" style={{ color: 'var(--accent-green)' }} />}
+                      {biasData.direction === 'down' && <TrendingDown className="w-3 h-3" style={{ color: 'var(--accent-red)' }} />}
+                      {biasData.direction === 'neutral' && <Minus className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />}
+                    </>
+                  )}
                 </div>
               </div>
               <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>

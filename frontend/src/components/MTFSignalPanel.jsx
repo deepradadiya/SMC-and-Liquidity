@@ -118,6 +118,33 @@ const MTFSignalPanel = () => {
         </div>
       )}
 
+      {/* Professional Status Message - Show when not loading and confidence < 60 */}
+      {!loading && mtfData && confluenceScore < 60 && (
+        <div className="m-3 p-6 text-center rounded-lg border" style={{ 
+          backgroundColor: 'var(--bg-tertiary)', 
+          borderColor: 'var(--accent-yellow)' 
+        }}>
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ 
+            backgroundColor: 'var(--accent-yellow)', 
+            color: 'white' 
+          }}>
+            📊
+          </div>
+          <div className="text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
+            ANALYZING MARKET CONDITIONS
+          </div>
+          <div className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
+            {mtfData.statusMessage || `Confidence score: ${confluenceScore}/100`}
+          </div>
+          <div className="text-xs px-3 py-1 rounded-full inline-block" style={{ 
+            backgroundColor: 'var(--bg-secondary)', 
+            color: 'var(--text-secondary)' 
+          }}>
+            Next analysis in {mtfData.next_analysis_in || 5} minutes
+          </div>
+        </div>
+      )}
+
       {/* Error State */}
       {error && (
         <div className="m-3 p-4 rounded-lg border border-[var(--accent-red)]" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
@@ -275,7 +302,7 @@ const MTFSignalPanel = () => {
         </div>
       )}
 
-      {/* MTF Bias - Real Data */}
+      {/* MTF Bias - Real Data with Professional Status */}
       {mtfBias && mtfBias.length > 0 && (
         <div className="mx-3 mb-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
           <div className="text-xs font-semibold mb-3" style={{ color: 'var(--text-secondary)' }}>
@@ -289,15 +316,27 @@ const MTFSignalPanel = () => {
                     {bias.timeframe}
                   </span>
                   <div className="flex items-center gap-1">
-                    <span className="font-semibold" style={{ 
-                      color: bias.direction === 'up' ? 'var(--accent-green)' : 
-                             bias.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)' 
-                    }}>
-                      {bias.bias}
-                    </span>
-                    {bias.direction === 'up' && <TrendingUp className="w-3 h-3" style={{ color: 'var(--accent-green)' }} />}
-                    {bias.direction === 'down' && <TrendingDown className="w-3 h-3" style={{ color: 'var(--accent-red)' }} />}
-                    {bias.direction === 'neutral' && <Minus className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />}
+                    {/* Show loading state for individual timeframes when confidence is low */}
+                    {confluenceScore < 60 && bias.bias === 'WAITING' ? (
+                      <span className="text-xs px-2 py-1 rounded" style={{ 
+                        backgroundColor: 'var(--bg-secondary)', 
+                        color: 'var(--text-secondary)' 
+                      }}>
+                        ANALYZING...
+                      </span>
+                    ) : (
+                      <>
+                        <span className="font-semibold" style={{ 
+                          color: bias.direction === 'up' ? 'var(--accent-green)' : 
+                                 bias.direction === 'down' ? 'var(--accent-red)' : 'var(--text-secondary)' 
+                        }}>
+                          {bias.bias}
+                        </span>
+                        {bias.direction === 'up' && <TrendingUp className="w-3 h-3" style={{ color: 'var(--accent-green)' }} />}
+                        {bias.direction === 'down' && <TrendingDown className="w-3 h-3" style={{ color: 'var(--accent-red)' }} />}
+                        {bias.direction === 'neutral' && <Minus className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />}
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>

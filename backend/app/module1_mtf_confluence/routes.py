@@ -34,6 +34,8 @@ class MTFAnalysisResponse(BaseModel):
     ltf_analysis: dict
     signal_valid: bool
     analysis_timestamp: str
+    next_analysis_in: Optional[int] = 5
+    market_status: Optional[str] = "analyzing"
 
 
 @router.post("/mtf-analyze", response_model=MTFAnalysisResponse)
@@ -87,7 +89,9 @@ async def analyze_mtf_confluence(request: MTFAnalysisRequest):
             mtf_analysis=result.mtf_analysis,
             ltf_analysis=result.ltf_analysis,
             signal_valid=result.entry is not None and result.confluence_score >= 60,
-            analysis_timestamp=result.htf_analysis.get("analysis_time", "")
+            analysis_timestamp=result.htf_analysis.get("analysis_time", ""),
+            next_analysis_in=getattr(result, 'next_analysis_in', 5),
+            market_status=getattr(result, 'market_status', 'analyzing')
         )
         
         logger.info(f"MTF Analysis complete: Score {result.confluence_score}, Valid: {response.signal_valid}")

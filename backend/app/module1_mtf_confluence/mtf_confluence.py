@@ -25,6 +25,12 @@ class ConfluenceResult:
     htf_analysis: Dict
     mtf_analysis: Dict
     ltf_analysis: Dict
+    next_analysis_in: int = 5
+    market_status: str = "analyzing"
+    
+    @property
+    def signal_valid(self) -> bool:
+        return self.entry is not None
 
 class BinanceDataFetcher:
     """Fetch real OHLCV data from Binance public API"""
@@ -550,6 +556,27 @@ class ConfluenceEngine:
         logger.info(f"📊 Confluence score calculated: {score}/100 with {len(reasons)} factors")
         return score, reasons
     
+    def _calculate_next_analysis_interval(self, confidence_score: int) -> int:
+        """
+        Calculate next analysis interval based on confidence score
+        
+        Args:
+            confidence_score: Current confluence score (0-100)
+            
+        Returns:
+            Minutes until next analysis
+        """
+        if confidence_score >= 80:
+            return 2  # High confidence - check every 2 minutes
+        elif confidence_score >= 60:
+            return 3  # Medium confidence - check every 3 minutes  
+        elif confidence_score >= 40:
+            return 5  # Low confidence - check every 5 minutes
+        elif confidence_score >= 20:
+            return 10  # Very low confidence - check every 10 minutes
+        else:
+            return 15  # Extremely low confidence - check every 15 minutes
+    
     async def analyze_mtf_confluence(
         self, 
         symbol: str, 
@@ -600,6 +627,9 @@ class ConfluenceEngine:
             entry = None
             reasons.append(f"❌ Signal rejected: Confluence score {score} < 60")
         
+        # Calculate next analysis time based on confidence score
+        next_analysis_minutes = self._calculate_next_analysis_interval(score)
+        
         result = ConfluenceResult(
             confluence_score=score,
             bias=bias,
@@ -609,7 +639,9 @@ class ConfluenceEngine:
             reasons=reasons,
             htf_analysis=htf_analysis,
             mtf_analysis=mtf_analysis,
-            ltf_analysis=ltf_analysis
+            ltf_analysis=ltf_analysis,
+            next_analysis_in=next_analysis_minutes,
+            market_status="analyzing" if score < 60 else "signal_ready"
         )
         
         logger.info(f"🎯 MTF Analysis complete: Score {score}, Bias {bias}, Entry: {entry}")
