@@ -11,12 +11,19 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from app.routes import analysis, signals, backtest, mtf_analysis, risk, smc_precise, advanced_backtest, auth, ml, sessions, alerts, historical_data
-from app.routes import data  # Import the enhanced data routes
-from app.config import get_settings, validate_configuration
-from app.utils.logger import setup_logging, get_logger
-from app.utils.rate_limiter import limiter, rate_limit_exceeded_handler
-from app.auth.auth import get_current_user
+from app.module1_mtf_confluence.routes import router as mtf_router
+from app.module2_risk_manager.routes import router as risk_router  
+from app.module3_smc_engine.routes import router as smc_router
+from app.module4_backtester.routes import router as backtest_router
+from app.module5_security.routes import router as auth_router
+from app.module6_ml_filter.routes import router as ml_router
+from app.module7_session_manager.routes import router as session_router
+from app.module8_alert_manager.routes import router as alert_router
+from app.module9_data_manager.routes import router as data_router
+from app.core.config import get_settings, validate_configuration
+from app.core.logger import setup_logging, get_logger
+from app.module5_security.rate_limiter import limiter, rate_limit_exceeded_handler
+from app.module5_security.auth import get_current_user
 
 # Load environment variables
 load_dotenv()
@@ -202,19 +209,17 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
-app.include_router(data.router, prefix="/api/data", tags=["data"])
-app.include_router(historical_data.router, prefix="/api/historical", tags=["historical-data"])
-app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
-app.include_router(signals.router, prefix="/api/signals", tags=["signals"])
-app.include_router(backtest.router, prefix="/api/backtest", tags=["backtest"])
-app.include_router(mtf_analysis.router, prefix="/api/mtf", tags=["mtf-analysis"])
-app.include_router(risk.router, prefix="/api/risk", tags=["risk-management"])
-app.include_router(smc_precise.router, prefix="/api/smc", tags=["precise-smc"])
-app.include_router(advanced_backtest.router, prefix="/api/advanced-backtest", tags=["advanced-backtest"])
-app.include_router(ml.router, prefix="/api/ml", tags=["machine-learning"])
-app.include_router(sessions.router, prefix="/api/sessions", tags=["session-management"])
-app.include_router(alerts.router, prefix="/api/alerts", tags=["alert-system"])
+app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
+app.include_router(data_router, prefix="/api/data", tags=["data"])
+app.include_router(data_router, prefix="/api/historical", tags=["historical-data"])  # Data manager handles historical data
+app.include_router(mtf_router, prefix="/api/mtf", tags=["mtf-analysis"])
+app.include_router(risk_router, prefix="/api/risk", tags=["risk-management"])
+app.include_router(smc_router, prefix="/api/smc", tags=["precise-smc"])
+app.include_router(backtest_router, prefix="/api/backtest", tags=["backtest"])
+app.include_router(backtest_router, prefix="/api/advanced-backtest", tags=["advanced-backtest"])  # Backtest module handles both
+app.include_router(ml_router, prefix="/api/ml", tags=["machine-learning"])
+app.include_router(session_router, prefix="/api/sessions", tags=["session-management"])
+app.include_router(alert_router, prefix="/api/alerts", tags=["alert-system"])
 
 @app.get("/")
 async def root():

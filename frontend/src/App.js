@@ -10,6 +10,7 @@ import { usePriceStore } from './stores/priceStore';
 import { useChartStore } from './stores/chartStore';
 import { useBinanceStream } from './hooks/useBinanceStream';
 import { fetchMultiplePrices } from './services/marketApi';
+import { checkHealth } from './services/api';
 
 const WATCHED = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT'];
 
@@ -18,10 +19,32 @@ const FALLBACK_INTERVAL_MS = 2000;
 
 function App() {
   const [wsStatus, setWsStatus] = useState('CONNECTING'); // CONNECTING | LIVE | FALLBACK
+  const [backendStatus, setBackendStatus] = useState('checking'); // checking | connected | disconnected
   const fallbackRef = useRef(null);
 
   const { updatePrices, setConnectionStatus } = usePriceStore();
   const { symbol, timeframe } = useChartStore();
+
+  // ── Backend health check ─────────────────────────────────────────────────
+  const checkBackendHealth = useCallback(async () => {
+    try {
+      const health = await checkHealth();
+      if (health) {
+        setBackendStatus('connected');
+      } else {
+        setBackendStatus('disconnected');
+      }
+    } catch (error) {
+      setBackendStatus('disconnected');
+    }
+  }, []);
+
+  // Check backend health on mount and every 30 seconds
+  useEffect(() => {
+    checkBackendHealth();
+    const healthInterval = setInterval(checkBackendHealth, 30000);
+    return () => clearInterval(healthInterval);
+  }, [checkBackendHealth]);
 
   // ── WebSocket handlers ───────────────────────────────────────────────────
   const onTicker = useCallback((sym, data) => {
@@ -72,7 +95,7 @@ function App() {
         overflow: 'hidden',
       }}
     >
-      <Header backendStatus="connected" wsStatus={wsStatus} />
+      <Header backendStatus={backendStatus} wsStatus={wsStatus} />
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Watchlist wsStatus={wsStatus} />
