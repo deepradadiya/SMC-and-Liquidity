@@ -341,9 +341,11 @@ async def analyze_mtf_confluence(request: dict):
     bias_options = ["bullish", "bearish", "neutral"]
     bias = random.choice(bias_options)
     
+    # Always define base_price for use in return statement
+    base_price = real_prices.get(symbol, {}).get('price', 45000)
+    
     # Generate entry/exit levels if confidence is high enough
     if confidence_score >= 60:
-        base_price = real_prices.get(symbol, {}).get('price', 45000)
         if bias == "bullish":
             entry = base_price * 0.999
             stop_loss = entry * 0.985

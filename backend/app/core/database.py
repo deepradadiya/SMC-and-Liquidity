@@ -76,6 +76,42 @@ class DatabaseManager:
                     )
                 """)
                 
+                # MTF Confluence History Table
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS mtf_confluence_history (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        symbol TEXT NOT NULL,
+                        htf TEXT NOT NULL,
+                        mtf TEXT NOT NULL,
+                        ltf TEXT NOT NULL,
+                        confluence_score INTEGER NOT NULL,
+                        bias TEXT NOT NULL,
+                        entry_price REAL,
+                        stop_loss REAL,
+                        take_profit REAL,
+                        signal_valid BOOLEAN NOT NULL,
+                        htf_analysis TEXT,  -- JSON string
+                        mtf_analysis TEXT,  -- JSON string
+                        ltf_analysis TEXT,  -- JSON string
+                        reasons TEXT,       -- JSON array of reasons
+                        market_status TEXT DEFAULT 'analyzing',
+                        next_analysis_in INTEGER DEFAULT 5,
+                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                # Create index for faster queries
+                cursor.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_mtf_history_symbol_time 
+                    ON mtf_confluence_history(symbol, timestamp DESC)
+                """)
+                
+                cursor.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_mtf_history_timeframes 
+                    ON mtf_confluence_history(htf, mtf, ltf)
+                """)
+                
                 conn.commit()
                 logger.info(f"Database initialized at {self.db_path}")
                 
@@ -115,6 +151,76 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Database insert error: {e}")
             raise
+    
+    def store_mtf_confluence_history(self, symbol: str, htf: str, mtf: str, ltf: str, 
+                                   confluence_data: dict) -> int:
+        """Store MTF confluence analysis in history table"""
+        import json
+        from datetime import datetime
+        
+        def json_serializer(obj):
+            """JSON serializer for objects not serializable by default json code"""
+            if hasattr(obj, 'isoformat'):
+                return obj.isoformat()
+            elif hasattr(obj, 'item'):  # numpy types
+                return obj.item()
+            elif hasattr(obj, 'tolist'):  # numpy arrays
+                return obj.tolist()
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+        
+        query = """
+            INSERT INTO mtf_confluence_history (
+                symbol, htf, mtf, ltf, confluence_score, bias, entry_price, 
+                stop_loss, take_profit, signal_valid, htf_analysis, mtf_analysis, 
+                ltf_analysis, reasons, market_status, next_analysis_in
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        
+        params = (
+            symbol,
+            htf,
+            mtf, 
+            ltf,
+            confluence_data.get('confluence_score', 0),
+            confluence_data.get('bias', 'neutral'),
+            confluence_data.get('entry'),
+            confluence_data.get('stop_loss'),
+            confluence_data.get('take_profit'),
+            confluence_data.get('signal_valid', False),
+            json.dumps(confluence_data.get('htf_analysis', {}), default=json_serializer),
+            json.dumps(confluence_data.get('mtf_analysis', {}), default=json_serializer),
+            json.dumps(confluence_data.get('ltf_analysis', {}), default=json_serializer),
+            json.dumps(confluence_data.get('reasons', []), default=json_serializer),
+            confluence_data.get('market_status', 'analyzing'),
+            confluence_data.get('next_analysis_in', 5)
+        )
+        
+        return self.execute_insert(query, params)
+    
+    def get_mtf_confluence_history(self, symbol: str, days: int = 1, 
+                                 htf: str = None, mtf: str = None, ltf: str = None):
+        """Get MTF confluence history for a symbol within specified days"""
+        query = """
+            SELECT * FROM mtf_confluence_history 
+            WHERE symbol = ? AND timestamp >= datetime('now', '-{} days')
+        """.format(days)
+        
+        params = [symbol]
+        
+        # Add timeframe filters if specified
+        if htf:
+            query += " AND htf = ?"
+            params.append(htf)
+        if mtf:
+            query += " AND mtf = ?"
+            params.append(mtf)
+        if ltf:
+            query += " AND ltf = ?"
+            params.append(ltf)
+            
+        query += " ORDER BY timestamp DESC"
+        
+        return self.execute_query(query, tuple(params))
 
 # Global database manager instance
 db_manager = DatabaseManager()

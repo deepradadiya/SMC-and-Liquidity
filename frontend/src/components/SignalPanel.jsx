@@ -1,12 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSignalStore, useChartStore } from '../stores';
 import { useMTFConfluence } from '../hooks/useMTFConfluence';
+import { useMTFHistory } from '../hooks/useMTFHistory';
 import { mockMarketRegime, mockQuickStats, mockRiskMeter } from '../data/mockData';
-import { Copy, CheckCircle, X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Copy, CheckCircle, X, TrendingUp, TrendingDown, Minus, Clock, RefreshCw, Filter, BarChart3 } from 'lucide-react';
+import MTFHistoryPanel from './MTFHistoryPanel';
 
 const SignalPanel = () => {
   const { activeSignal, setActiveSignal, scanning } = useSignalStore();
   const { symbol, timeframe, htf } = useChartStore();
+  const [activeTab, setActiveTab] = useState('live'); // 'live' or 'history'
   
   // Get real MTF data with professional messaging
   const {
@@ -69,9 +72,71 @@ const SignalPanel = () => {
   };
 
   return (
-    <div className="w-70 border-l border-[var(--border)] flex flex-col overflow-y-auto" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-      {/* Active Signal Card */}
-      {signal ? (
+    <div className="w-70 border-l border-[var(--border)] flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      
+      {/* Header with tabs */}
+      <div className="p-3 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+            MTF Confluence Analysis
+          </h3>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex gap-1">
+          <button
+            onClick={() => setActiveTab('live')}
+            className={`px-3 py-1.5 text-sm rounded transition-colors flex items-center gap-2 ${
+              activeTab === 'live' ? 'text-white' : 'hover:bg-[var(--bg-hover)]'
+            }`}
+            style={{
+              backgroundColor: activeTab === 'live' ? 'var(--accent-blue)' : 'transparent',
+              color: activeTab === 'live' ? 'white' : 'var(--text-secondary)'
+            }}
+          >
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            Live Analysis
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-3 py-1.5 text-sm rounded transition-colors flex items-center gap-2 ${
+              activeTab === 'history' ? 'text-white' : 'hover:bg-[var(--bg-hover)]'
+            }`}
+            style={{
+              backgroundColor: activeTab === 'history' ? 'var(--accent-blue)' : 'transparent',
+              color: activeTab === 'history' ? 'white' : 'var(--text-secondary)'
+            }}
+          >
+            <Clock className="w-4 h-4" />
+            History
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'live' ? (
+        <div className="flex-1 overflow-y-auto">
+          {renderLiveContent()}
+        </div>
+      ) : (
+        <div className="flex-1 overflow-hidden">
+          <MTFHistoryPanel 
+            symbol={symbol}
+            htf={htf}
+            mtf="1h"
+            ltf={timeframe}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  // Separate function for live content
+  function renderLiveContent() {
+    return (
+      <>
+        {/* Active Signal Card */}
+        {signal ? (
         <div data-testid="active-signal-card" className="m-3 rounded-lg overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
           {/* Header */}
           <div className="p-3 flex items-center justify-between" style={{ backgroundColor: signal.type === 'BUY' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
@@ -332,8 +397,9 @@ const SignalPanel = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+      </>
+    );
+  }
 };
 
 export default SignalPanel;

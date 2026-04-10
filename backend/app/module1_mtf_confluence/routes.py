@@ -136,3 +136,151 @@ async def get_mtf_status(symbol: str, htf: str = "4h"):
     except Exception as e:
         logger.error(f"Error getting MTF status: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get MTF status: {str(e)}")
+
+
+@router.get("/mtf-history/{symbol}")
+async def get_mtf_confluence_history(
+    symbol: str,
+    days: int = 1,
+    htf: Optional[str] = None,
+    mtf: Optional[str] = None,
+    ltf: Optional[str] = None
+):
+    """
+    Get MTF confluence history for a symbol
+    
+    Args:
+        symbol: Trading pair symbol
+        days: Number of days to look back (1, 7, 30, 365)
+        htf: Filter by higher timeframe (optional)
+        mtf: Filter by medium timeframe (optional)
+        ltf: Filter by lower timeframe (optional)
+    """
+    try:
+        from ..core.database import db_manager
+        import json
+        
+        # Validate days parameter
+        valid_days = [1, 7, 30, 365]
+        if days not in valid_days:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid days parameter. Must be one of: {valid_days}"
+            )
+        
+        # Get historical data
+        history_data = db_manager.get_mtf_confluence_history(
+            symbol=symbol,
+            days=days,
+            htf=htf,
+            mtf=mtf,
+            ltf=ltf
+        )
+        
+        # Format response
+        formatted_history = []
+        for row in history_data:
+            try:
+                formatted_entry = {
+                    "id": row[0],
+                    "symbol": row[1],
+                    "htf": row[2],
+                    "mtf": row[3],
+                    "ltf": row[4],
+                    "confluence_score": row[5],
+                    "bias": row[6],
+                    "entry_price": row[7],
+                    "stop_loss": row[8],
+                    "take_profit": row[9],
+                    "signal_valid": bool(row[10]),
+                    "htf_analysis": json.loads(row[11]) if row[11] else {},
+                    "mtf_analysis": json.loads(row[12]) if row[12] else {},
+                    "ltf_analysis": json.loads(row[13]) if row[13] else {},
+                    "reasons": json.loads(row[14]) if row[14] else [],
+                    "market_status": row[15],
+                    "next_analysis_in": row[16],
+                    "timestamp": row[17],
+                    "created_at": row[18]
+                }
+                formatted_history.append(formatted_entry)
+            except Exception as e:
+                logger.error(f"Error formatting history entry: {e}")
+                continue
+        
+        return {
+            "symbol": symbol,
+            "days": days,
+            "filters": {
+                "htf": htf,
+                "mtf": mtf,
+                "ltf": ltf
+            },
+            "total_entries": len(formatted_history),
+            "history": formatted_history
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting MTF history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get MTF history: {str(e)}")
+
+
+@router.get("/mtf-history-summary/{symbol}")
+async def get_mtf_history_summary(symbol: str, days: int = 7):
+    """
+    Get MTF confluence history summary with statistics
+    
+    Args:
+        symbol: Trading pair symbol
+        days: Number of days to analyze
+    """
+    try:
+        from ..core.database import db_manager
+        import json
+        from collections import Counter
+        
+        # Get historical data
+        history_data = db_manager.get_mtf_confluence_history(symbol=symbol, days=days)
+        
+        if not history_data:
+            return {
+                "symbol": symbol,
+                "days": days,
+                "total_analyses": 0,
+                "summary": "No historical data available"
+            }
+        
+        # Calculate statistics
+        total_analyses = len(history_data)
+        valid_signals = sum(1 for row in history_data if row[10])  # signal_valid column
+        
+        # Bias distribution
+        bias_counts = Counter(row[6] for row in history_data)  # bias column
+        
+        # Average confluence score
+        scores = [row[5] for row in history_data]  # confluence_score column
+        avg_score = sum(scores) / len(scores) if scores else 0
+        
+        # Score distribution
+        high_confidence = sum(1 for score in scores if score >= 80)
+        medium_confidence = sum(1 for score in scores if 60 <= score < 80)
+        low_confidence = sum(1 for score in scores if score < 60)
+        
+        return {
+            "symbol": symbol,
+            "days": days,
+            "total_analyses": total_analyses,
+            "valid_signals": valid_signals,
+            "signal_rate": round((valid_signals / total_analyses) * 100, 2) if total_analyses > 0 else 0,
+            "average_confluence_score": round(avg_score, 2),
+            "bias_distribution": dict(bias_counts),
+            "confidence_distribution": {
+                "high_confidence_80_plus": high_confidence,
+                "medium_confidence_60_79": medium_confidence,
+                "low_confidence_below_60": low_confidence
+            },
+            "latest_analysis": history_data[0][17] if history_data else None  # timestamp
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting MTF history summary: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get MTF history summary: {str(e)}")

@@ -596,6 +596,9 @@ class ConfluenceEngine:
         Returns:
             ConfluenceResult with complete analysis
         """
+        from ..core.database import db_manager
+        import json
+        
         logger.info(f"🚀 Starting REAL MTF confluence analysis for {symbol}")
         
         # Step 1: Analyze HTF bias using real Binance data
@@ -643,6 +646,32 @@ class ConfluenceEngine:
             next_analysis_in=next_analysis_minutes,
             market_status="analyzing" if score < 60 else "signal_ready"
         )
+        
+        # Step 6: Store in historical database for ML training and history tracking
+        try:
+            confluence_data = {
+                'confluence_score': score,
+                'bias': bias,
+                'entry': entry,
+                'stop_loss': ltf_analysis.get("sl"),
+                'take_profit': ltf_analysis.get("tp"),
+                'signal_valid': entry is not None,  # Direct boolean check
+                'htf_analysis': htf_analysis,
+                'mtf_analysis': mtf_analysis,
+                'ltf_analysis': ltf_analysis,
+                'reasons': reasons,
+                'market_status': result.market_status,
+                'next_analysis_in': next_analysis_minutes
+            }
+            
+            history_id = db_manager.store_mtf_confluence_history(
+                symbol, htf, mtf, entry_tf, confluence_data
+            )
+            logger.info(f"📊 MTF confluence history stored with ID: {history_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to store MTF confluence history: {e}")
+            # Don't fail the analysis if history storage fails
         
         logger.info(f"🎯 MTF Analysis complete: Score {score}, Bias {bias}, Entry: {entry}")
         return result
