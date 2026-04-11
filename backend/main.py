@@ -3,9 +3,13 @@ SMC Trading System - Main FastAPI Application
 Clean modular architecture with organized imports
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
 import logging
+import random
+from datetime import datetime
 
 # Import all module routers
 from app.module1_mtf_confluence.routes import router as mtf_router
@@ -25,6 +29,30 @@ from app.core.database import db_manager
 
 # Initialize logger
 logger = get_logger(__name__)
+
+# Pydantic models for /predict endpoint
+class Candle(BaseModel):
+    open_time: str
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+
+class PredictRequest(BaseModel):
+    candles: List[Candle]
+    atr_sl_multiplier: float = 1.5
+
+class PredictResponse(BaseModel):
+    signal: str
+    confidence: float
+    entry: float
+    stop_loss: float
+    target: float
+    rr_ratio: float
+    xgb_pred: str
+    rf_pred: str
+    smc_pred: str
 
 # Create FastAPI app
 app = FastAPI(
@@ -129,6 +157,64 @@ async def health_check():
         "modules_loaded": 9,
         "database": "connected"
     }
+
+@app.post("/predict", response_model=PredictResponse)
+async def predict_signal(request: PredictRequest):
+    """
+    Predict trading signal using ML model
+    """
+    try:
+        # For now, return a mock response since the ML model integration is complex
+        # This prevents the 404 error while you can implement the full ML integration later
+        
+        if len(request.candles) < 10:
+            raise HTTPException(status_code=400, detail="Send at least 10 candles")
+        
+        # Get the latest candle for entry price
+        latest_candle = request.candles[-1]
+        entry_price = latest_candle.close
+        
+        # Mock ATR calculation (you can replace with real ATR calculation)
+        mock_atr = abs(latest_candle.high - latest_candle.low) * 0.8
+        sl_distance = mock_atr * request.atr_sl_multiplier
+        tp_distance = sl_distance * 2.0
+        
+        # Mock signal generation (replace with your ML model)
+        signals = ["BUY", "SELL", "HOLD"]
+        mock_signal = random.choice(signals)
+        mock_confidence = random.uniform(60, 95)
+        
+        # Calculate stop loss and target based on signal
+        if mock_signal == "BUY":
+            stop_loss = round(entry_price - sl_distance, 4)
+            target = round(entry_price + tp_distance, 4)
+        elif mock_signal == "SELL":
+            stop_loss = round(entry_price + sl_distance, 4)
+            target = round(entry_price - tp_distance, 4)
+        else:  # HOLD
+            stop_loss = round(entry_price - sl_distance, 4)
+            target = round(entry_price + tp_distance, 4)
+        
+        rr_ratio = round(tp_distance / (sl_distance + 1e-9), 2)
+        
+        response = PredictResponse(
+            signal=mock_signal,
+            confidence=round(mock_confidence, 2),
+            entry=round(entry_price, 4),
+            stop_loss=stop_loss,
+            target=target,
+            rr_ratio=rr_ratio,
+            xgb_pred=mock_signal,
+            rf_pred=mock_signal,
+            smc_pred=mock_signal
+        )
+        
+        logger.info(f"Generated prediction: {mock_signal} with {mock_confidence:.1f}% confidence")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn

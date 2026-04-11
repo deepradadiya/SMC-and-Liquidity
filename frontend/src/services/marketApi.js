@@ -70,7 +70,7 @@ export async function fetchTicker24(symbol = 'BTCUSDT') {
  * interval: 1m | 5m | 15m | 1h | 4h | 1d
  * Returns: Array of { time (seconds), open, high, low, close, volume }
  */
-export async function fetchCandles(symbol = 'BTCUSDT', interval = '15m', limit = 300) {
+export async function fetchCandles(symbol = 'BTCUSDT', interval = '15m', limit = 1000) {
   const raw = await get(
     `${BINANCE}/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
   );
@@ -115,7 +115,7 @@ const ML_API = process.env.REACT_APP_ML_API_URL || 'http://localhost:8000';
 // Cache last candles to avoid hammering Binance
 const _candleCache = {};
 
-async function fetchCandlesCached(symbol, interval, limit) {
+async function fetchCandlesCached(symbol, interval, limit = 1000) {
   const key = `${symbol}_${interval}`;
   const now = Date.now();
   if (_candleCache[key] && now - _candleCache[key].ts < 10000) {
@@ -133,7 +133,7 @@ async function fetchCandlesCached(symbol, interval, limit) {
 export async function fetchLiveSignal(symbol = 'BTCUSDT', interval = '15m') {
   // 1. Try ML API (FastAPI /predict) — short timeout so fallback is fast
   try {
-    const candles = await fetchCandlesCached(symbol, interval, 300);
+    const candles = await fetchCandlesCached(symbol, interval, 1000);
     const payload = {
       candles: candles.map(c => ({
         open_time: new Date(c.time * 1000).toISOString(),
@@ -183,7 +183,7 @@ export async function fetchLiveSignal(symbol = 'BTCUSDT', interval = '15m') {
   }
 
   // 3. Client-side fallback
-  const candles = await fetchCandlesCached(symbol, interval, 100);
+  const candles = await fetchCandlesCached(symbol, interval, 1000);
   return calcSignalClientSide(candles, symbol);
 }
 

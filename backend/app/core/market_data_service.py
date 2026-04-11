@@ -17,7 +17,7 @@ class MarketDataService:
         self, 
         symbol: str, 
         timeframe: str = '1h', 
-        limit: int = 500
+        limit: int = 1000
     ) -> MarketData:
         """Fetch OHLCV data from Binance"""
         try:

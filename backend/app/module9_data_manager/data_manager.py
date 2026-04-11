@@ -361,8 +361,8 @@ class DataSourceManager:
         
         binance_tf = tf_map.get(timeframe, '1h')
         
-        # For recent data, just get the latest candles without strict date filtering
-        limit = 100  # Get more recent candles
+        # For recent data, get maximum available candles for better historical view
+        limit = 1000  # Get maximum candles (Binance API limit)
         
         logger.info(f"Binance fetch: {symbol} {binance_tf}, limit={limit} (recent data)")
         

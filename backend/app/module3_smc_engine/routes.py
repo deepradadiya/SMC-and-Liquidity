@@ -83,7 +83,7 @@ async def analyze_precise_smc(request: PreciseSMCRequest):
         market_data = await market_data_service.fetch_ohlcv(
             symbol=request.symbol,
             timeframe=request.timeframe,
-            limit=500
+            limit=1000
         )
         
         # Convert to DataFrame
@@ -412,7 +412,7 @@ async def update_smc_config(config: SMCDetectionConfig):
 class AnalysisRequest(BaseModel):
     symbol: str
     timeframe: str = "1h"
-    limit: int = 500
+    limit: int = 1000
 
 class SignalRequest(BaseModel):
     symbol: str

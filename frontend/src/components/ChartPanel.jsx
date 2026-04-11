@@ -87,7 +87,23 @@ const ChartPanel = () => {
     setLoading(true);
     setError(null);
     try {
-      const candles = await fetchCandles(symbol, binanceInterval, 500);
+      // Use maximum possible candles based on timeframe for better historical view
+      const getOptimalLimit = (interval) => {
+        switch(interval) {
+          case '1m': return 1000;   // ~16.7 hours
+          case '5m': return 1000;   // ~3.5 days
+          case '15m': return 1000;  // ~10.4 days
+          case '1h': return 1000;   // ~41.7 days
+          case '4h': return 1000;   // ~166 days
+          case '1d': return 1000;   // ~2.7 years
+          default: return 1000;
+        }
+      };
+      
+      const limit = getOptimalLimit(binanceInterval);
+      console.log(`📊 Loading ${limit} candles for ${symbol} ${binanceInterval} (max historical data)`);
+      
+      const candles = await fetchCandles(symbol, binanceInterval, limit);
       candles.sort((a, b) => a.time - b.time);
       candleBufferRef.current = candles;
       // Wait until chart is ready

@@ -342,7 +342,7 @@ async def analyze_mtf_confluence(request: dict):
     bias = random.choice(bias_options)
     
     # Always define base_price for use in return statement
-    base_price = real_prices.get(symbol, {}).get('price', 45000)
+    base_price = real_prices.get(symbol, {}).get('price', 45000 if symbol == "BTCUSDT" else 2800 if symbol == "ETHUSDT" else 0.45)
     
     # Generate entry/exit levels if confidence is high enough
     if confidence_score >= 60:

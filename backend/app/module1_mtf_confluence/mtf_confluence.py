@@ -38,7 +38,7 @@ class BinanceDataFetcher:
     BASE_URL = "https://api.binance.com/api/v3/klines"
     
     @staticmethod
-    def fetch_candles(symbol: str, interval: str, limit: int = 200) -> pd.DataFrame:
+    def fetch_candles(symbol: str, interval: str, limit: int = 1000) -> pd.DataFrame:
         """
         Fetch real candle data from Binance
         
